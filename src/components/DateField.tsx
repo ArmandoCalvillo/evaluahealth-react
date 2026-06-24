@@ -8,13 +8,14 @@ interface DateFieldProps {
   error?: string;
   min?: string;
   max?: string;
+  required?: boolean;
 }
 
 /**
  * Date input where clicking anywhere in the field opens the native calendar
  * (not just the calendar icon). Shows an inline error message right below the box.
  */
-export default function DateField({ label, value, onChange, error, min, max }: DateFieldProps) {
+export default function DateField({ label, value, onChange, error, min, max, required }: DateFieldProps) {
   const ref = useRef<HTMLInputElement>(null);
 
   const openPicker = () => {
@@ -30,7 +31,7 @@ export default function DateField({ label, value, onChange, error, min, max }: D
 
   return (
     <div className="field">
-      {label && <label>{label}</label>}
+      {label && <label>{label}{required && <span className="req">*</span>}</label>}
       <input
         ref={ref}
         className={`input${error ? " input-error" : ""}`}

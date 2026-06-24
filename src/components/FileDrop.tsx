@@ -6,10 +6,10 @@ import { SUPABASE_READY } from "@/lib/supabase";
 
 /** Drag&drop + click image uploader with preview. Returns public URL via onChange. */
 export default function FileDrop({
-  bucket, value, onChange, label = "Upload photo", shape = "square", doc = false,
+  bucket, value, onChange, label = "Upload photo", shape = "square", doc = false, required = false,
 }: {
   bucket: Bucket; value?: string | null; onChange: (url: string) => void;
-  label?: string; shape?: "square" | "circle"; doc?: boolean;
+  label?: string; shape?: "square" | "circle"; doc?: boolean; required?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -55,7 +55,7 @@ export default function FileDrop({
         {!preview && <Icon name={busy ? "loader" : doc ? "credit-card" : "image-plus"} size={26} />}
       </div>
       <div>
-        <div style={{ fontWeight: 700, fontSize: 13.5, marginBottom: 4 }}>{label}</div>
+        <div style={{ fontWeight: 700, fontSize: 13.5, marginBottom: 4 }}>{label}{required && <span className="req">*</span>}</div>
         <div className="hint" style={{ marginTop: 0 }}>
           {busy ? "Uploading…" : "Drag & drop or click to browse"}
         </div>

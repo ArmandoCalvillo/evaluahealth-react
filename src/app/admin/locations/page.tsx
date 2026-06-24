@@ -132,9 +132,9 @@ export default function Locations() {
 
       <Drawer open={open} onClose={() => setOpen(false)} title={editId ? "Edit Location" : "Add Location"} sub="Sites identify where evaluations happen"
         footer={<><button className="btn btn-ghost" onClick={() => setOpen(false)}>Cancel</button><button className="btn btn-pri" onClick={save}>Save Location</button></>}>
-        <div className="field"><label>Site Name</label><input className={`input${nameErr ? " input-error" : ""}`} value={form.name || ""} onChange={(e) => { setForm((f) => ({ ...f, name: e.target.value })); if (e.target.value) setNameErr(""); }} placeholder="e.g. Mexico City" />{nameErr && <div className="field-error">{nameErr}</div>}</div>
-        <div className="field"><label>Site Code</label><input className={`input${codeErr ? " input-error" : ""}`} value={form.code || ""} onChange={(e) => { setForm((f) => ({ ...f, code: e.target.value })); if (e.target.value) setCodeErr(""); }} placeholder="e.g. MEX-01" />{codeErr && <div className="field-error">{codeErr}</div>}</div>
-        <div className="field"><label>Color</label>
+        <div className="field"><label>Site Name <span className="req">*</span></label><input className={`input${nameErr ? " input-error" : ""}`} value={form.name || ""} onChange={(e) => { setForm((f) => ({ ...f, name: e.target.value })); if (e.target.value) setNameErr(""); }} placeholder="e.g. Mexico City" />{nameErr && <div className="field-error">{nameErr}</div>}</div>
+        <div className="field"><label>Site Code <span className="req">*</span></label><input className={`input${codeErr ? " input-error" : ""}`} value={form.code || ""} onChange={(e) => { setForm((f) => ({ ...f, code: e.target.value })); if (e.target.value) setCodeErr(""); }} placeholder="e.g. MEX-01" />{codeErr && <div className="field-error">{codeErr}</div>}</div>
+        <div className="field"><label>Color <span className="req">*</span></label>
           <div style={{ display: "flex", gap: 10 }}>
             {availableColors.map((c) => (
               <button key={c} type="button" onClick={() => setForm((f) => ({ ...f, color: c }))}

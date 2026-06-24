@@ -566,7 +566,7 @@ export default function Students() {
       <Drawer open={dGroup} onClose={() => { setDGroup(false); setGErr(""); setEditGroup(null); }} title={editGroup ? "Edit Assessment Group" : "New Assessment Group"}
         sub="Groups are identified by assessment date"
         footer={<><button className="btn btn-ghost" onClick={() => { setDGroup(false); setEditGroup(null); }}>Cancel</button><button className="btn btn-pri" onClick={saveGroup}>{editGroup ? "Save Changes" : "Create Group"}</button></>}>
-        <DateField label="Assessment Date" value={gDate} onChange={(v) => { setGDate(v); if (v) setGErr(""); }} error={gErr} min={editGroup ? undefined : todayStr()} />
+        <DateField label="Assessment Date" required value={gDate} onChange={(v) => { setGDate(v); if (v) setGErr(""); }} error={gErr} min={editGroup ? undefined : todayStr()} />
         <div className="hint-box"><Icon name="info" size={16} /> A unique Group ID is generated automatically. Students within a group are organized by site and slot.</div>
       </Drawer>
 
@@ -576,20 +576,20 @@ export default function Students() {
         footer={<><button className="btn btn-ghost" onClick={() => { setDAdd(false); setSErr({}); setEditStudent(null); }}>Cancel</button><button className="btn btn-pri" onClick={saveStudent}>{editStudent ? "Save Changes" : "Register"}</button></>}>
         <div className="field-row" style={{ marginBottom: 14 }}>
           <div className="field">
-            <FileDrop bucket="student-photos" label="Foto" shape="circle" value={form.photo_url} onChange={(u) => { setForm((f) => ({ ...f, photo_url: u })); if (u) setSErr((e) => ({ ...e, photo: "" })); }} />
+            <FileDrop bucket="student-photos" label="Foto" shape="circle" required value={form.photo_url} onChange={(u) => { setForm((f) => ({ ...f, photo_url: u })); if (u) setSErr((e) => ({ ...e, photo: "" })); }} />
             {sErr.photo && <div className="field-error">{sErr.photo}</div>}
           </div>
           <div className="field">
-            <FileDrop bucket="student-idcards" label="ID Card" doc value={form.idcard_url} onChange={(u) => { setForm((f) => ({ ...f, idcard_url: u })); if (u) setSErr((e) => ({ ...e, idcard: "" })); }} />
+            <FileDrop bucket="student-idcards" label="ID Card" doc required value={form.idcard_url} onChange={(u) => { setForm((f) => ({ ...f, idcard_url: u })); if (u) setSErr((e) => ({ ...e, idcard: "" })); }} />
             {sErr.idcard && <div className="field-error">{sErr.idcard}</div>}
           </div>
         </div>
         <div className="field-row">
-          <div className="field"><label>Nombre</label><input className={`input${sErr.name ? " input-error" : ""}`} value={form.name || ""} onChange={(e) => { setForm((f) => ({ ...f, name: e.target.value })); if (e.target.value) setSErr((x) => ({ ...x, name: "" })); }} />{sErr.name && <div className="field-error">{sErr.name}</div>}</div>
-          <div className="field"><label>Folio</label><input className={`input${sErr.qrtexto ? " input-error" : ""}`} value={form.qrtexto || ""} onChange={(e) => { setForm((f) => ({ ...f, qrtexto: e.target.value })); if (e.target.value) setSErr((x) => ({ ...x, qrtexto: "" })); }} />{sErr.qrtexto && <div className="field-error">{sErr.qrtexto}</div>}</div>
+          <div className="field"><label>Nombre <span className="req">*</span></label><input className={`input${sErr.name ? " input-error" : ""}`} value={form.name || ""} onChange={(e) => { setForm((f) => ({ ...f, name: e.target.value })); if (e.target.value) setSErr((x) => ({ ...x, name: "" })); }} />{sErr.name && <div className="field-error">{sErr.name}</div>}</div>
+          <div className="field"><label>Folio <span className="req">*</span></label><input className={`input${sErr.qrtexto ? " input-error" : ""}`} value={form.qrtexto || ""} onChange={(e) => { setForm((f) => ({ ...f, qrtexto: e.target.value })); if (e.target.value) setSErr((x) => ({ ...x, qrtexto: "" })); }} />{sErr.qrtexto && <div className="field-error">{sErr.qrtexto}</div>}</div>
         </div>
         <div className="field-row">
-          <div className="field"><label>Sede</label><select className={`select${sErr.site ? " input-error" : ""}`} value={form.site || ""} onChange={(e) => { setForm((f) => ({ ...f, site: e.target.value })); if (e.target.value) setSErr((x) => ({ ...x, site: "" })); }}><option value="" disabled>Select a location…</option>{locations.map((l) => <option key={l.id}>{l.name}</option>)}</select>{sErr.site && <div className="field-error">{sErr.site}</div>}</div>
+          <div className="field"><label>Sede <span className="req">*</span></label><select className={`select${sErr.site ? " input-error" : ""}`} value={form.site || ""} onChange={(e) => { setForm((f) => ({ ...f, site: e.target.value })); if (e.target.value) setSErr((x) => ({ ...x, site: "" })); }}><option value="" disabled>Select a location…</option>{locations.map((l) => <option key={l.id}>{l.name}</option>)}</select>{sErr.site && <div className="field-error">{sErr.site}</div>}</div>
           <div className="field"><label>Slot</label><select className="select" value={form.slot || ""} onChange={(e) => setForm((f) => ({ ...f, slot: e.target.value }))}>{SLOTS.map((s) => <option key={s}>{s}</option>)}</select></div>
         </div>
         {editStudent && (
@@ -613,14 +613,22 @@ export default function Students() {
         ) : undefined}>
         {!preview ? (
           <>
-            <div className="hint-box" style={{ marginBottom: 14 }}><Icon name="info" size={16} /> Expected columns: <b>NOMBRE</b>, <b>Folio</b>, <b>IDENTIFICACION</b></div>
-            <label className="btn btn-pri btn-block" style={{ cursor: "pointer", marginBottom: 10 }}>
-              <Icon name={parsing ? "loader" : "upload"} size={16} /> {parsing ? "Reading file…" : "Choose CSV / Excel file"}
-              <input type="file" accept=".xlsx,.xls,.csv" hidden disabled={parsing} onChange={(e) => { const f = e.target.files?.[0]; if (f) onPickFile(f); e.target.value = ""; }} />
-            </label>
-            <button className="btn btn-ghost btn-block" onClick={downloadStudentTemplate}>
-              <Icon name="download" size={16} /> Download empty template
-            </button>
+            <div className="field">
+              <label>Student file (CSV / Excel)</label>
+              <label className="dropzone" style={{ cursor: "pointer", display: "block" }}>
+                <input type="file" accept=".xlsx,.xls,.csv" style={{ display: "none" }} disabled={parsing} onChange={(e) => { const f = e.target.files?.[0]; if (f) onPickFile(f); e.target.value = ""; }} />
+                <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "18px 16px", border: "1.5px dashed var(--line)", borderRadius: 14, background: "var(--surface)" }}>
+                  <Icon name={parsing ? "loader" : "upload-cloud"} size={26} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13.5 }}>{parsing ? "Reading file…" : "Click to choose a file"}</div>
+                    <div className="sub" style={{ fontSize: 12 }}>Columns: NOMBRE, Folio, IDENTIFICACION, FOTO, Sede, Slot</div>
+                  </div>
+                </div>
+              </label>
+              <button type="button" className="btn btn-xs btn-ghost" style={{ marginTop: 8 }} onClick={downloadStudentTemplate}>
+                <Icon name="download" size={13} /> Download template
+              </button>
+            </div>
           </>
         ) : (
           <>

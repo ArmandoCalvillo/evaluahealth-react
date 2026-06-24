@@ -392,7 +392,7 @@ export default function Cases() {
       <Drawer open={dBatch} onClose={() => { setDBatch(false); setBErr(""); }} title="New Case Batch"
         sub="Pick an assessment date that already has a student group"
         footer={<><button className="btn btn-ghost" onClick={() => setDBatch(false)}>Cancel</button><button className="btn btn-pri" onClick={saveBatch}>Create Batch</button></>}>
-        <div className="field"><label>Assessment Date</label>
+        <div className="field"><label>Assessment Date <span className="req">*</span></label>
           <select className={`select${bErr ? " input-error" : ""}`} value={bDate} onChange={(e) => { setBDate(e.target.value); if (e.target.value) setBErr(""); }}>
             <option value="" disabled>Select an assessment date…</option>
             {availableDates.map((d) => <option key={d} value={d}>{d}</option>)}
@@ -414,7 +414,7 @@ export default function Cases() {
     return (
       <Drawer open={dCase} onClose={() => setDCase(false)} wide title={editCase ? "Edit Case" : "Add Case"} sub="Define the case and its rubric criterios"
         footer={<><button className="btn btn-ghost" onClick={() => setDCase(false)}>Cancel</button><button className="btn btn-pri" onClick={saveCase}>{editCase ? "Save Changes" : "Save Case"}</button></>}>
-        <div className="field"><label>Case Name</label><input className={`input${caseErr ? " input-error" : ""}`} value={caseName} onChange={(e) => { setCaseName(e.target.value); if (e.target.value.trim()) setCaseErr(""); }} placeholder="Escenario B · Politrauma en urgencias" />{caseErr && <div className="field-error">{caseErr}</div>}</div>
+        <div className="field"><label>Case Name <span className="req">*</span></label><input className={`input${caseErr ? " input-error" : ""}`} value={caseName} onChange={(e) => { setCaseName(e.target.value); if (e.target.value.trim()) setCaseErr(""); }} placeholder="Escenario B · Politrauma en urgencias" />{caseErr && <div className="field-error">{caseErr}</div>}</div>
 
         <div style={{ borderTop: "1px solid var(--line)", paddingTop: 16, marginTop: 4 }}>
           <h4 style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 800 }}>Criterios</h4>
@@ -477,7 +477,7 @@ export default function Cases() {
             <button type="button" className={`btn btn-sm ${qType === "yesno" ? "btn-pri" : "btn-ghost"}`} onClick={() => setQType("yesno")}>Sí / No</button>
           </div>
         </div>
-        <div className="field" style={{ marginBottom: 10 }}><label>Criterio title</label><input className={`input${qErr ? " input-error" : ""}`} value={qTitle} onChange={(e) => { setQTitle(e.target.value); if (e.target.value.trim()) setQErr(""); }} placeholder={qType === "rubric" ? "e.g. C — Circulación y Control Hemorragia" : "e.g. ¿Realizó lavado de manos antes del procedimiento?"} />{qErr && <div className="field-error">{qErr}</div>}</div>
+        <div className="field" style={{ marginBottom: 10 }}><label>Criterio title <span className="req">*</span></label><input className={`input${qErr ? " input-error" : ""}`} value={qTitle} onChange={(e) => { setQTitle(e.target.value); if (e.target.value.trim()) setQErr(""); }} placeholder={qType === "rubric" ? "e.g. C — Circulación y Control Hemorragia" : "e.g. ¿Realizó lavado de manos antes del procedimiento?"} />{qErr && <div className="field-error">{qErr}</div>}</div>
         {qType === "rubric" && RUBRIC_LEVELS.map((l) => (
           <div className="field" style={{ marginBottom: 10 }} key={l.level}>
             <label>{l.level}</label>
@@ -502,7 +502,7 @@ export default function Cases() {
             {importing ? "Importing…" : impCriterios.length ? `Import ${impCriterios.length} criterio${impCriterios.length === 1 ? "" : "s"}` : "Import"}
           </button></>}>
 
-        <div className="field"><label>Case Name</label>
+        <div className="field"><label>Case Name <span className="req">*</span></label>
           <input className={`input${impNameErr ? " input-error" : ""}`} value={impName}
             onChange={(e) => { setImpName(e.target.value); if (e.target.value.trim()) setImpNameErr(""); }}
             placeholder="e.g. Escenario MATER · Emergencia obstétrica" />
@@ -510,7 +510,7 @@ export default function Cases() {
         </div>
 
         <div className="field">
-          <label>Case file (CSV / Excel)</label>
+          <label>Case file (CSV / Excel) <span className="req">*</span></label>
           <label className={`dropzone${impFileErr ? " input-error" : ""}`} style={{ cursor: "pointer", display: "block" }}>
             <input type="file" accept=".csv,.xlsx,.xls" style={{ display: "none" }} onChange={onPickCaseFile} />
             <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "18px 16px", border: "1.5px dashed var(--line)", borderRadius: 14, background: "var(--surface)" }}>

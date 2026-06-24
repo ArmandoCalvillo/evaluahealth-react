@@ -174,12 +174,12 @@ export default function Evaluators() {
       <Drawer open={dAdd} onClose={() => { setDAdd(false); setErr({}); }} wide title={editId ? "Edit Evaluator" : "Add Evaluator"} sub={editId ? "Update evaluator details" : "Create a clinical evaluator account · all fields required"}
         footer={<><button className="btn btn-ghost" onClick={() => { setDAdd(false); setErr({}); }}>Cancel</button><button className="btn btn-pri" onClick={save} disabled={busy}>{busy ? "Saving…" : editId ? "Save Changes" : "Create Account"}</button></>}>
         <div style={{ marginBottom: 14 }}>
-          <FileDrop bucket="evaluator-photos" label="Photo" shape="circle" value={form.photo_url} onChange={(u) => { setForm((f) => ({ ...f, photo_url: u })); if (u) setErr((x) => ({ ...x, photo: "" })); }} />
+          <FileDrop bucket="evaluator-photos" label="Photo" shape="circle" required value={form.photo_url} onChange={(u) => { setForm((f) => ({ ...f, photo_url: u })); if (u) setErr((x) => ({ ...x, photo: "" })); }} />
           {err.photo && <div className="field-error">{err.photo}</div>}
         </div>
-        <div className="field"><label>Full Name</label><input className={`input${err.name ? " input-error" : ""}`} value={form.name || ""} onChange={(e) => { setForm((f) => ({ ...f, name: e.target.value })); if (e.target.value) setErr((x) => ({ ...x, name: "" })); }} placeholder="Dr. Maria Rodriguez" />{err.name && <div className="field-error">{err.name}</div>}</div>
-        <div className="field"><label>Email</label><input className={`input${err.email ? " input-error" : ""}`} type="email" value={form.email || ""} onChange={(e) => { setForm((f) => ({ ...f, email: e.target.value })); if (e.target.value) setErr((x) => ({ ...x, email: "" })); }} />{err.email && <div className="field-error">{err.email}</div>}</div>
-        <div className="field"><label>Password{editId ? " (leave blank to keep current)" : ""}</label>
+        <div className="field"><label>Full Name <span className="req">*</span></label><input className={`input${err.name ? " input-error" : ""}`} value={form.name || ""} onChange={(e) => { setForm((f) => ({ ...f, name: e.target.value })); if (e.target.value) setErr((x) => ({ ...x, name: "" })); }} placeholder="Dr. Maria Rodriguez" />{err.name && <div className="field-error">{err.name}</div>}</div>
+        <div className="field"><label>Email <span className="req">*</span></label><input className={`input${err.email ? " input-error" : ""}`} type="email" value={form.email || ""} onChange={(e) => { setForm((f) => ({ ...f, email: e.target.value })); if (e.target.value) setErr((x) => ({ ...x, email: "" })); }} />{err.email && <div className="field-error">{err.email}</div>}</div>
+        <div className="field"><label>Password{editId ? " (leave blank to keep current)" : ""}{!editId && <span className="req">*</span>}</label>
           <div className="pass-wrap">
             <input className={`input${err.pass ? " input-error" : ""}`} type={showPass ? "text" : "password"} value={form.pass || ""} placeholder={editId ? "••••••••" : ""} onChange={(e) => { setForm((f) => ({ ...f, pass: e.target.value })); if (e.target.value) setErr((x) => ({ ...x, pass: "" })); }} />
             <button type="button" onClick={() => setShowPass((s) => !s)}><Icon name={showPass ? "eye-off" : "eye"} size={18} /></button>
@@ -187,8 +187,8 @@ export default function Evaluators() {
           {err.pass && <div className="field-error">{err.pass}</div>}
         </div>
         <div className="field-row">
-          <div className="field"><label>Phone</label><input className={`input${err.phone ? " input-error" : ""}`} value={form.phone || ""} onChange={(e) => { setForm((f) => ({ ...f, phone: e.target.value })); if (e.target.value) setErr((x) => ({ ...x, phone: "" })); }} />{err.phone && <div className="field-error">{err.phone}</div>}</div>
-          <div className="field"><label>Site</label><select className={`select${err.site ? " input-error" : ""}`} value={form.site || ""} onChange={(e) => { setForm((f) => ({ ...f, site: e.target.value })); if (e.target.value) setErr((x) => ({ ...x, site: "" })); }}><option value="" disabled>Select a site…</option>{locations.map((l) => <option key={l.id}>{l.name}</option>)}</select>{err.site && <div className="field-error">{err.site}</div>}</div>
+          <div className="field"><label>Phone <span className="req">*</span></label><input className={`input${err.phone ? " input-error" : ""}`} value={form.phone || ""} onChange={(e) => { setForm((f) => ({ ...f, phone: e.target.value })); if (e.target.value) setErr((x) => ({ ...x, phone: "" })); }} />{err.phone && <div className="field-error">{err.phone}</div>}</div>
+          <div className="field"><label>Site <span className="req">*</span></label><select className={`select${err.site ? " input-error" : ""}`} value={form.site || ""} onChange={(e) => { setForm((f) => ({ ...f, site: e.target.value })); if (e.target.value) setErr((x) => ({ ...x, site: "" })); }}><option value="" disabled>Select a site…</option>{locations.map((l) => <option key={l.id}>{l.name}</option>)}</select>{err.site && <div className="field-error">{err.site}</div>}</div>
         </div>
       </Drawer>
     </Shell>
