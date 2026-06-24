@@ -1,0 +1,5 @@
+@import "tailwindcss";
+@import "./veritas.css";
+
+/* Tailwind is available for utilities; veritas.css carries the pixel-perfect design system. */
+html, body { background: #f5f7fb; }
