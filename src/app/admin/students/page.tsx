@@ -25,6 +25,19 @@ function isLocked(dateStr: string) {
   return dateStr < todayStr();
 }
 
+// Windowed page numbers: 1 … (cur-1) cur (cur+1) … last
+function pageWindow(cur: number, total: number): (number | "...")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const out: (number | "...")[] = [1];
+  const start = Math.max(2, cur - 1);
+  const end = Math.min(total - 1, cur + 1);
+  if (start > 2) out.push("...");
+  for (let i = start; i <= end; i++) out.push(i);
+  if (end < total - 1) out.push("...");
+  out.push(total);
+  return out;
+}
+
 export default function Students() {
   const toast = useToast();
   const [groups, setGroups] = useState<Group[]>([]);
@@ -40,6 +53,7 @@ export default function Students() {
   const [detail, setDetail] = useState<Student | null>(null);
   const [showIdCard, setShowIdCard] = useState(false);
   const [site, setSite] = useState("all");
+  const [page, setPage] = useState(1);
   const [loaded, setLoaded] = useState(false);
   const [showIds, setShowIds] = useState(false);
 
@@ -109,7 +123,7 @@ export default function Students() {
 
   async function openGroup(g: Group) {
     setActive(g);
-    setGroupCases([]); setEvals([]); setSite("all");
+    setGroupCases([]); setEvals([]); setSite("all"); setPage(1);
     if (!SUPABASE_READY) return;
     try { setStudents(await listStudents(g.id)); } catch { setStudents([]); }
     try {
@@ -306,6 +320,10 @@ export default function Students() {
   function closeImport() { setDImport(false); setPreview(null); setParsing(false); }
 
   const filtered = site === "all" ? students : students.filter((s) => s.site === site);
+  const PAGE_SIZE = 12; // ~4 rows of 3 cards
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const curPage = Math.min(page, pageCount);
+  const paged = filtered.slice((curPage - 1) * PAGE_SIZE, curPage * PAGE_SIZE);
 
   return (
     <Shell portal="admin" title="Students" sub="Assessment groups, organized by date">
@@ -376,7 +394,7 @@ export default function Students() {
           <div className="card-head" style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 16, marginBottom: 16, flexWrap: "wrap" }}>
             <div className="tabs scroll-tabs">
               {siteTabs.map((s) => (
-                <button key={s.key} className={`tab ${site === s.key ? "active" : ""}`} onClick={() => setSite(s.key)}>{s.label}</button>
+                <button key={s.key} className={`tab ${site === s.key ? "active" : ""}`} onClick={() => { setSite(s.key); setPage(1); }}>{s.label}</button>
               ))}
             </div>
             <div style={{ display: "flex", gap: 10 }}>
@@ -394,7 +412,7 @@ export default function Students() {
                 action={isLocked(active.assessment_date) ? undefined : <button className="btn btn-pri" onClick={() => { setEditStudent(null); setForm({ slot: "8:00 AM" }); setSErr({}); setDAdd(true); }}><Icon name="user-plus" size={16} /> Add Student</button>} />
             </div></div>
           ) : (
-            <div className="grid g-3">{filtered.map((s) => (
+            <><div className="grid g-3">{paged.map((s) => (
               <div className="case-tile student-tile is-clickable" key={s.id} onClick={() => { setShowIdCard(false); setDetail(s); }}>
                 <div className="st-head">
                   <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -431,6 +449,25 @@ export default function Students() {
                 )}
               </div>
             ))}</div>
+            {pageCount > 1 && (
+              <div className="pager">
+                <span className="pager-info">
+                  Showing {(curPage - 1) * PAGE_SIZE + 1}–{Math.min(curPage * PAGE_SIZE, filtered.length)} of {filtered.length}
+                </span>
+                <div className="pager-ctrls">
+                  <button className="btn btn-ghost btn-sm" disabled={curPage <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}><Icon name="chevron-left" size={15} /> Prev</button>
+                  {pageWindow(curPage, pageCount).map((n, i) =>
+                    n === "..." ? (
+                      <span key={`e${i}`} className="pager-ellipsis">…</span>
+                    ) : (
+                      <button key={n} className={`btn btn-sm ${n === curPage ? "btn-pri" : "btn-ghost"}`} onClick={() => setPage(n as number)}>{n}</button>
+                    )
+                  )}
+                  <button className="btn btn-ghost btn-sm" disabled={curPage >= pageCount} onClick={() => setPage((p) => Math.min(pageCount, p + 1))}>Next <Icon name="chevron-right" size={15} /></button>
+                </div>
+              </div>
+            )}
+            </>
           )}
         </>
       )}

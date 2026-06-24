@@ -336,6 +336,9 @@ input[type="date"].input::-webkit-calendar-picker-indicator{cursor:pointer}
 /* pagination */
 .pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;border-top:1px solid var(--line);flex-wrap:wrap}
 .pager .pg-btns{display:flex;gap:6px}
+.pager-info{font-size:13px;color:var(--muted);font-weight:600}
+.pager-ctrls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pager-ellipsis{padding:0 4px;color:var(--muted);font-weight:700}
 .pg{width:34px;height:34px;border-radius:9px;border:1px solid var(--line-2);background:#fff;font-weight:700;font-size:13px;cursor:pointer;color:var(--ink-2)}
 .pg.active{background:var(--brand);color:#fff;border-color:var(--brand)}
 
