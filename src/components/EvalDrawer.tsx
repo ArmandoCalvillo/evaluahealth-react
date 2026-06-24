@@ -65,7 +65,11 @@ export default function EvalDrawer({
         const restored: Record<string, string> = {};
         (mine.answers || []).forEach((a) => { if (a?.question_id) restored[a.question_id] = a.value; });
         setAnswers(restored);
-        setDoneAt(mine.status === "finished" ? (mine.submitted_at ?? null) : null);
+        const finishedAt = mine.status === "finished" ? (mine.submitted_at ?? null) : null;
+        setDoneAt(finishedAt);
+        // Open the edit form directly — skip the "Evaluación terminada" screen.
+        // Still respect the lock window: if it's older than the edit window, keep it read-only.
+        if (finishedAt && !isEditLocked(finishedAt)) setEditing(true);
       }
     } catch { setQuestions([]); }
     setLoading(false);
