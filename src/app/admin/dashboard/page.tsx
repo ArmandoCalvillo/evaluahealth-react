@@ -226,7 +226,7 @@ export default function Dashboard() {
   const totalStudentsScope = fStudents.length;
   const completionDenom = totalStudentsScope;
   const fullyDone = fStudents.filter((s) => { const t = studentTarget(s.id); return t > 0 && (finishedByStudent.get(s.id) || 0) >= t; }).length;
-  const completionRate = completionDenom ? Math.round((fullyDone / completionDenom) * 100) : 0;
+  const completionRate = completionDenom ? (fullyDone / completionDenom) * 100 : 0;
   // student-level breakdown (drives the explainer under the gauge)
   const compInProgress = fStudents.filter((s) => {
     const t = studentTarget(s.id); const fin = finishedByStudent.get(s.id) || 0;
