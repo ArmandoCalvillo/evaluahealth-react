@@ -35,7 +35,7 @@ export function Radial({ value, color = "#2563EB", size = 118 }: { value: number
 }
 
 /* ---------- Gauge (semicircle) ---------- */
-export function Gauge({ value, color = "#2563EB", height = 220 }: { value: number; color?: string; height?: number }) {
+export function Gauge({ value, color = "#2563EB", height = 220, label = "Completion" }: { value: number; color?: string; height?: number; label?: string }) {
   const opts: ApexOptions = {
     chart: { type: "radialBar", ...NOANIM, fontFamily: FONT },
     plotOptions: {
@@ -49,7 +49,7 @@ export function Gauge({ value, color = "#2563EB", height = 220 }: { value: numbe
       },
     },
     fill: { type: "gradient", gradient: { shade: "light", gradientToColors: [shade(color, 0.3)], stops: [0, 100] } },
-    colors: [color], stroke: { lineCap: "round" }, labels: ["Completion"],
+    colors: [color], stroke: { lineCap: "round" }, labels: [label],
   };
   return <Chart type="radialBar" series={[value]} options={opts} height={height} />;
 }

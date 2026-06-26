@@ -965,3 +965,20 @@ td.nowrap,.pill.nowrap{white-space:nowrap}
 .tdraw-scrub-tag{margin-left:auto;font-size:11px;font-weight:800;color:#2563EB;background:#e8f0fe;padding:2px 9px;border-radius:99px}
 .tdraw-range{width:100%;accent-color:#2563EB;cursor:pointer}
 .tdraw-scrub-ends{display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#98a2b3}
+
+/* ===== Evaluation Completion explainer ===== */
+.comp-wrap { display:flex; flex-direction:column; align-items:center; }
+.comp-formula { margin-top:-6px; font-size:13px; color:#475569; text-align:center; line-height:1.4; }
+.comp-formula b { color:#0f1b3d; }
+.comp-note { color:#94a3b8; }
+.comp-bd { width:100%; margin-top:16px; display:flex; flex-direction:column; gap:9px; }
+.comp-row { display:flex; align-items:center; gap:10px; font-size:13.5px; }
+.comp-row.comp-muted .comp-lbl, .comp-row.comp-muted .comp-val { color:#94a3b8; }
+.comp-dot { width:11px; height:11px; border-radius:4px; flex:none; }
+.comp-lbl { color:#475569; flex:1; }
+.comp-val { font-weight:800; color:#0f1b3d; font-variant-numeric:tabular-nums; }
+.comp-panels { width:100%; margin-top:16px; padding-top:14px; border-top:1px solid #eef1f7; }
+.comp-panels-bar { height:8px; border-radius:99px; background:#eef1f7; overflow:hidden; }
+.comp-panels-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,#2563EB,#16a34a); transition:width .4s; }
+.comp-panels-lbl { margin-top:8px; font-size:12.5px; color:#64748b; }
+.comp-panels-lbl b { color:#0f1b3d; }

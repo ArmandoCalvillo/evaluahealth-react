@@ -226,6 +226,18 @@ export default function Dashboard() {
   const completionDenom = Math.max(0, totalStudentsScope - absentInScope);
   const fullyDone = fStudents.filter((s) => { const t = studentTarget(s.id); return t > 0 && (finishedByStudent.get(s.id) || 0) >= t; }).length;
   const completionRate = completionDenom ? Math.round((fullyDone / completionDenom) * 100) : 0;
+  // student-level breakdown (drives the explainer under the gauge)
+  const compInProgress = fStudents.filter((s) => {
+    const t = studentTarget(s.id); const fin = finishedByStudent.get(s.id) || 0;
+    return !(t > 0 && fin >= t) && (fin > 0 || startedAllIds.has(s.id)) && !isAbsent(s.id);
+  }).length;
+  const compNotStarted = Math.max(0, completionDenom - fullyDone - compInProgress);
+  // panel-level progress (finished evaluator-panels vs total expected) — finer signal than student-level
+  const panelExpected = fStudents.reduce((sum, s) => isAbsent(s.id) ? sum
+    : sum + casesForStudent(s.id).reduce((c, cs) => c + panelSize(s.id, cs.id), 0), 0);
+  const panelFinished = fStudents.reduce((sum, s) => isAbsent(s.id) ? sum
+    : sum + Math.min(finishedByStudent.get(s.id) || 0, casesForStudent(s.id).reduce((c, cs) => c + panelSize(s.id, cs.id), 0)), 0);
+  const panelPct = panelExpected ? Math.round((panelFinished / panelExpected) * 100) : 0;
 
   // ---- 2) Evaluations per Scheduled Group Hour (grouped bars, by site) ----
   const fmtSlot = (raw: string): string => {
@@ -577,10 +589,48 @@ export default function Dashboard() {
       {/* Evaluation Completion + Evaluations per Scheduled Group Hour */}
       <div className="grid g-3" style={{ marginBottom: 18 }}>
         <div className="card">
-          <div className="card-head"><div><h3>Evaluation Completion</h3><div className="sub">Overall rate</div></div></div>
+          <div className="card-head"><div><h3>Evaluation Completion</h3><div className="sub">Students fully evaluated</div></div></div>
           <div className="card-pad">
             {!isUpcomingOnly && totalStudentsScope > 0 ? (
-              <Gauge value={completionRate} color="#16a34a" height={250} />
+              <div className="comp-wrap">
+                <Gauge value={completionRate} color="#16a34a" height={190} label="fully evaluated" />
+                <div className="comp-formula">
+                  <b>{fullyDone}</b> of <b>{completionDenom}</b> students fully evaluated
+                  {absentInScope > 0 && <span className="comp-note"> · {absentInScope} excluded (did not appear)</span>}
+                </div>
+                <div className="comp-bd">
+                  <div className="comp-row">
+                    <span className="comp-dot" style={{ background: "#16a34a" }} />
+                    <span className="comp-lbl">Fully evaluated</span>
+                    <span className="comp-val">{fullyDone}</span>
+                  </div>
+                  <div className="comp-row">
+                    <span className="comp-dot" style={{ background: "#f59e0b" }} />
+                    <span className="comp-lbl">In progress</span>
+                    <span className="comp-val">{compInProgress}</span>
+                  </div>
+                  <div className="comp-row">
+                    <span className="comp-dot" style={{ background: "#cbd5e1" }} />
+                    <span className="comp-lbl">Not started</span>
+                    <span className="comp-val">{compNotStarted}</span>
+                  </div>
+                  {absentInScope > 0 && (
+                    <div className="comp-row comp-muted">
+                      <span className="comp-dot" style={{ background: "#e2e8f0" }} />
+                      <span className="comp-lbl">Did not appear</span>
+                      <span className="comp-val">{absentInScope}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="comp-panels">
+                  <div className="comp-panels-bar">
+                    <div className="comp-panels-fill" style={{ width: `${panelPct}%` }} />
+                  </div>
+                  <div className="comp-panels-lbl">
+                    Individual evaluations submitted · <b>{panelFinished}</b> of <b>{panelExpected}</b> ({panelPct}%)
+                  </div>
+                </div>
+              </div>
             ) : (
               <EmptyState icon="gauge" title={isUpcomingOnly ? "Assessment not started yet" : "No students yet"}
                 text={isUpcomingOnly ? "Completion will appear once the assessment begins." : undefined} />
