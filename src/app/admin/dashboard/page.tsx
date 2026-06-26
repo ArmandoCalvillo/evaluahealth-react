@@ -615,11 +615,6 @@ export default function Dashboard() {
                     <span className="comp-lbl">In progress</span>
                     <span className="comp-val">{compInProgress}</span>
                   </div>
-                  <div className="comp-row">
-                    <span className="comp-dot" style={{ background: "#cbd5e1" }} />
-                    <span className="comp-lbl">Not started</span>
-                    <span className="comp-val">{compNotStarted}</span>
-                  </div>
                   {absentInScope > 0 && (
                     <div className="comp-row">
                       <span className="comp-dot" style={{ background: "#e11d48" }} />
@@ -627,14 +622,6 @@ export default function Dashboard() {
                       <span className="comp-val">{absentInScope}</span>
                     </div>
                   )}
-                </div>
-                <div className="comp-panels">
-                  <div className="comp-panels-bar">
-                    <div className="comp-panels-fill" style={{ width: `${panelPct}%` }} />
-                  </div>
-                  <div className="comp-panels-lbl">
-                    Individual evaluations submitted · <b>{panelFinished}</b> of <b>{panelExpected}</b> ({panelPct}%)
-                  </div>
                 </div>
               </div>
             ) : (
