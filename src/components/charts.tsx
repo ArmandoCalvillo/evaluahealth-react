@@ -44,7 +44,7 @@ export function Gauge({ value, color = "#2563EB", height = 220, label = "Complet
         track: { background: "#eef1f7", strokeWidth: "100%" },
         dataLabels: {
           name: { offsetY: 22, color: "#8a93a6", fontSize: "13px", fontWeight: 600 },
-          value: { offsetY: -14, fontSize: "30px", fontWeight: 800, color: "#0F1B3D", formatter: (v) => { const n = Number(v); return n > 0 && n < 1 ? "<1%" : `${Math.round(n)}%`; } },
+          value: { offsetY: -14, fontSize: "30px", fontWeight: 800, color: "#0F1B3D", formatter: (v) => { const n = Number(v); return n > 0 && n < 1 ? `${n.toFixed(1)}%` : `${Math.round(n)}%`; } },
         },
       },
     },
