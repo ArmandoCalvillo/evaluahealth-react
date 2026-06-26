@@ -104,10 +104,17 @@ export default function EvalDashboard() {
 
   const maxCount = Math.max(1, ...history.map((h) => h.count));
 
-  // recent activity = latest finished evaluations
-  const recent = useMemo(() =>
-    finished.slice().sort((a, b) => ((b.submitted_at || "") > (a.submitted_at || "") ? 1 : -1)).slice(0, 8),
-    [finished]);
+  // recent activity = latest evaluations (finished + ongoing). pending/ongoing rise to top.
+  const recent = useMemo(() => {
+    const ts = (e: Evaluation) => e.submitted_at || e.started_at || "";
+    return myEvals.slice().sort((a, b) => {
+      // ongoing first, then by most recent timestamp
+      const ao = a.status === "finished" ? 1 : 0;
+      const bo = b.status === "finished" ? 1 : 0;
+      if (ao !== bo) return ao - bo;
+      return ts(b) > ts(a) ? 1 : -1;
+    }).slice(0, 8);
+  }, [myEvals]);
 
   return (
     <Shell portal="evaluator" title="Dashboard" sub="Your evaluation workspace">
@@ -153,10 +160,11 @@ export default function EvalDashboard() {
               <EmptyState icon="activity" title="No recent activity" text="Head to Evaluate to start assessing students." />
             ) : (
               <div className="tbl-wrap"><table className="tbl">
-                <thead><tr><th>Student</th><th>Case</th><th>Submitted</th><th style={{ width: 56 }}></th></tr></thead>
+                <thead><tr><th>Student</th><th>Case</th><th>Status</th><th>Submitted</th><th style={{ width: 56 }}></th></tr></thead>
                 <tbody>{recent.map((e) => {
                   const s = students[e.student_id];
-                  const locked = isEditLocked(e.submitted_at);
+                  const isFinished = e.status === "finished";
+                  const locked = isFinished && isEditLocked(e.submitted_at);
                   return (
                     <tr key={e.id}>
                       <td>
@@ -168,11 +176,16 @@ export default function EvalDashboard() {
                         </div>
                       </td>
                       <td><span className="pill pill-violet">{caseNames[e.case_id] || "Caso"}</span></td>
-                      <td>{fmtTime(e.submitted_at)}</td>
+                      <td>
+                        {isFinished
+                          ? <span className="status-pill status-done"><Icon name="check-circle-2" size={14} /> Finished</span>
+                          : <span className="status-pill status-pending"><Icon name="clock" size={14} /> In progress</span>}
+                      </td>
+                      <td>{isFinished ? fmtTime(e.submitted_at) : <span className="sub">— not submitted</span>}</td>
                       <td>
                         {locked
                           ? <span className="icon-btn is-locked" title="Bloqueada (más de 2 días)"><Icon name="lock" size={15} /></span>
-                          : <button className="icon-btn" title="Editar evaluación" onClick={() => setEditTarget({ student: s ?? null, studentId: e.student_id, caseId: e.case_id, caseName: caseNames[e.case_id] || "Evaluación" })}><Icon name="pencil" size={15} /></button>}
+                          : <button className="icon-btn" title={isFinished ? "Editar evaluación" : "Continuar evaluación"} onClick={() => setEditTarget({ student: s ?? null, studentId: e.student_id, caseId: e.case_id, caseName: caseNames[e.case_id] || "Evaluación" })}><Icon name={isFinished ? "pencil" : "play"} size={15} /></button>}
                       </td>
                     </tr>
                   );

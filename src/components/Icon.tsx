@@ -12,6 +12,7 @@ const ALIAS: Record<string, string> = {
   "minus-circle": "CircleMinus",
   "info": "Info",
   "check-square": "SquareCheckBig",
+  "alert-triangle": "TriangleAlert",
 };
 
 // Convert kebab-case (lucide html name) to PascalCase (lucide-react export)

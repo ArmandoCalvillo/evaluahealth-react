@@ -220,7 +220,7 @@ export default function EvalDrawer({
             </div>
           ) : (
             <>
-              <div className="eval-progress" style={{ marginBottom: 14 }}>
+              <div className="eval-progress" style={{ marginBottom: 14, position: "static", top: "auto", zIndex: "auto" }}>
                 <div className="eval-progress-circle">
                   <svg className="ring-prog" viewBox="0 0 120 120" style={{ width: 84, height: 84 }}>
                     <circle className="ring-bg" cx="60" cy="60" r="54" />

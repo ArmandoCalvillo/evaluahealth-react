@@ -785,3 +785,17 @@ td.nowrap,.pill.nowrap{white-space:nowrap}
 .trk-title{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--ink)}
 .trk-bar{height:9px;border-radius:99px;background:#eef2f7;overflow:hidden}
 .trk-fill{height:100%;border-radius:99px;transition:width .4s ease}
+
+/* ===== Activity status pill (dashboard recent activity) ===== */
+.status-pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;line-height:1}
+.status-pill.status-done{color:#16a34a;background:#e7f8ee;border:1px solid #b9ecca}
+.status-pill.status-pending{color:#e11d48;background:#fdeaee;border:1px solid #f6c2cd}
+
+/* ===== Dashboard group drill-down additions ===== */
+.trk-clickable{cursor:pointer}
+.gp-sname{font-weight:800;font-size:14.5px;color:var(--navy)}
+.gp-av-ini{background:var(--brand-soft);color:var(--brand);display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+.gp-caseline{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gp-dots{display:inline-flex;gap:5px}
+.gp-dot{width:11px;height:11px;border-radius:50%;background:#e2e8f0}
+.gp-dot.gp-dot-on{background:#16a34a}
