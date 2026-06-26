@@ -268,11 +268,16 @@ export default function Dashboard() {
 
   // ---- 3) Completion by Case (donut + per-case %) ----
   const caseColors = ["#2563EB", "#7c3aed", "#0d9488", "#f59e0b", "#e11d48", "#16a34a"];
-  const caseStudentIds = new Set(fStudents.map((s) => s.id));
   const caseRows = cases.map((c, i) => {
+    // A case only applies to students whose group assessment date == the case's batch date.
+    const cb = c.batch_id ? batchById.get(c.batch_id) : null;
+    const caseStudents = cb
+      ? fStudents.filter((s) => groupById.get(s.group_id || "")?.assessment_date === cb.assessment_date)
+      : fStudents;
+    const caseStudentIds = new Set(caseStudents.map((s) => s.id));
     const finished = finishedEvals.filter((e) => e.case_id === c.id && caseStudentIds.has(e.student_id)).length;
-    // % = finished panels vs expected (sum of each student's panel size) for this case
-    const expected = fStudents.reduce((sum, s) => sum + panelSize(s.id, c.id), 0);
+    // % = finished panels vs expected (sum of each relevant student's panel size) for this case
+    const expected = caseStudents.reduce((sum, s) => sum + panelSize(s.id, c.id), 0);
     const pct = expected ? Math.round((finished / expected) * 100) : 0;
     return { name: c.name, finished, pct, color: caseColors[i % caseColors.length] };
   });
