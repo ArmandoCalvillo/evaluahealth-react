@@ -9,7 +9,7 @@ import {
   listMyEvaluations, listStudents, listGroups, listBatches, listCases,
 } from "@/lib/db";
 import type { Evaluation, Student, Group, CaseRow } from "@/lib/types";
-import { todayStr, isEditLocked } from "@/lib/dates";
+import { todayStr, isDateLocked } from "@/lib/dates";
 
 function fmtDate(s: string) {
   if (!s) return "";
@@ -27,6 +27,7 @@ export default function EvalDashboard() {
   const [loading, setLoading] = useState(true);
   const [myEvals, setMyEvals] = useState<Evaluation[]>([]);
   const [students, setStudents] = useState<Record<string, Student>>({});
+  const [groupDates, setGroupDates] = useState<Record<string, string>>({});
   const [caseNames, setCaseNames] = useState<Record<string, string>>({});
   const [todayGroup, setTodayGroup] = useState<Group | null>(null);
   const [todayStudents, setTodayStudents] = useState<Student[]>([]);
@@ -57,6 +58,10 @@ export default function EvalDashboard() {
         setCaseNames(cmap);
         // today's scheduling for "Pending Today" + "Cases Active"
         const groups = await listGroups();
+        // map group_id -> assessment_date so evaluations stay in their batch's date
+        const gmap: Record<string, string> = {};
+        groups.forEach((g2) => { gmap[g2.id] = g2.assessment_date; });
+        setGroupDates(gmap);
         const g = groups.find((x) => x.assessment_date === todayStr()) || null;
         setTodayGroup(g);
         if (g) {
@@ -86,21 +91,20 @@ export default function EvalDashboard() {
     { ic: "layers", tint: "tint-blue", lbl: "Cases Active", val: activeCases },
   ];
 
-  // history grouped by assessment date — count of distinct students finished per date
+  // history grouped by the student's batch assessment date (NOT submission timestamp) —
+  // count of distinct students finished per assessment date
   const history = useMemo(() => {
     const byDate: Record<string, Set<string>> = {};
     finished.forEach((e) => {
       const s = students[e.student_id];
-      // group by submission date
-      const d = e.submitted_at ? e.submitted_at.slice(0, 10) : "";
+      const d = (s?.group_id && groupDates[s.group_id]) || (e.submitted_at ? e.submitted_at.slice(0, 10) : "");
       if (!d) return;
       (byDate[d] ||= new Set()).add(e.student_id);
-      void s;
     });
     return Object.entries(byDate)
       .map(([date, set]) => ({ date, count: set.size }))
       .sort((a, b) => (a.date < b.date ? 1 : -1));
-  }, [finished, students]);
+  }, [finished, students, groupDates]);
 
   const maxCount = Math.max(1, ...history.map((h) => h.count));
 
@@ -164,7 +168,8 @@ export default function EvalDashboard() {
                 <tbody>{recent.map((e) => {
                   const s = students[e.student_id];
                   const isFinished = e.status === "finished";
-                  const locked = isFinished && isEditLocked(e.submitted_at);
+                  const aDate = (s?.group_id && groupDates[s.group_id]) || (e.submitted_at ? e.submitted_at.slice(0, 10) : "");
+                  const locked = isFinished && isDateLocked(aDate);
                   return (
                     <tr key={e.id}>
                       <td>
@@ -184,8 +189,8 @@ export default function EvalDashboard() {
                       <td>{isFinished ? fmtTime(e.submitted_at) : <span className="sub">— not submitted</span>}</td>
                       <td>
                         {locked
-                          ? <span className="icon-btn is-locked" title="Bloqueada (más de 2 días)"><Icon name="lock" size={15} /></span>
-                          : <button className="icon-btn" title={isFinished ? "Editar evaluación" : "Continuar evaluación"} onClick={() => setEditTarget({ student: s ?? null, studentId: e.student_id, caseId: e.case_id, caseName: caseNames[e.case_id] || "Evaluación" })}><Icon name={isFinished ? "pencil" : "play"} size={15} /></button>}
+                          ? <span className="icon-btn is-locked" title="Bloqueada (el día de la evaluación terminó)"><Icon name="lock" size={15} /></span>
+                          : <button className="icon-btn" title={isFinished ? "Editar evaluación" : "Continuar evaluación"} onClick={() => setEditTarget({ student: s ?? null, studentId: e.student_id, caseId: e.case_id, caseName: caseNames[e.case_id] || "Evaluación", assessmentDate: aDate })}><Icon name={isFinished ? "pencil" : "play"} size={15} /></button>}
                       </td>
                     </tr>
                   );

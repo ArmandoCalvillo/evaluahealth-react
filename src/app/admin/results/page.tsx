@@ -6,7 +6,15 @@ import EmptyState from "@/components/EmptyState";
 import { useToast } from "@/components/Toast";
 import { SUPABASE_READY } from "@/lib/supabase";
 import { listGroups, listLocations, listBatches, listCases, listQuestions, listStudents, listEvaluations } from "@/lib/db";
-import type { Group, Location } from "@/lib/types";
+import type { Group, Location, Student, Evaluation, CaseRow } from "@/lib/types";
+
+/* format an ISO timestamp -> "Jun 24, 2026 · 9:42 AM" */
+function fmtStamp(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }).replace(",", "").replace(/(\d{4}) /, "$1 · ");
+}
 
 /* CSV cell escaping (quote when needed). */
 function csvCell(v: string): string {
@@ -30,10 +38,14 @@ export default function Results() {
   const toast = useToast();
   const [groups, setGroups] = useState<Group[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [evals, setEvals] = useState<Evaluation[]>([]);
   const [active, setActive] = useState<Group | null>(null);
   const [site, setSite] = useState("all");
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [exporting, setExporting] = useState(false);
+  const [detailCases, setDetailCases] = useState<CaseRow[]>([]);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   const siteTabs = [{ key: "all", label: "All Sites" }, ...locations.map((l) => ({ key: l.name, label: l.name }))];
 
@@ -41,8 +53,53 @@ export default function Results() {
     if (!SUPABASE_READY) return;
     try { setGroups(await listGroups()); } catch { /* */ }
     try { setLocations(await listLocations()); } catch { /* */ }
+    try { setStudents(await listStudents()); } catch { /* */ }
+    try { setEvals(await listEvaluations()); } catch { /* */ }
   }, []);
   useEffect(() => { reload(); }, [reload]);
+
+  /* Load the cases for the selected group's batch (for the drill-down detail). */
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!active) { setDetailCases([]); return; }
+      setDetailLoading(true);
+      try {
+        const batches = await listBatches();
+        const batch = batches.find((b) => b.assessment_date === active.assessment_date);
+        const cs = batch ? await listCases(batch.id) : [];
+        if (!cancelled) setDetailCases(cs);
+      } catch { if (!cancelled) setDetailCases([]); }
+      if (!cancelled) setDetailLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [active]);
+
+  /* Normalize a stored site value (name OR code) to a canonical location name. */
+  const siteName = useCallback((raw: string | null): string => {
+    const v = (raw || "").trim().toLowerCase();
+    const loc = locations.find((l) => l.name.toLowerCase() === v || (l.code || "").toLowerCase() === v);
+    return loc?.name || (raw || "").trim();
+  }, [locations]);
+
+  /* count of STUDENTS (not evaluations) per group with ≥1 submission, keyed by
+     location name; plus a row total of distinct students. */
+  const countsByGroup = useCallback((groupId: string) => {
+    const stuSite = new Map<string, string>();
+    students.forEach((s) => { if (s.group_id === groupId) stuSite.set(s.id, siteName(s.site)); });
+    // distinct students with at least one finished, submitted evaluation
+    const submittedStudents = new Set<string>();
+    evals.forEach((e) => {
+      if (e.status !== "finished" || !e.submitted_at) return;
+      if (stuSite.has(e.student_id)) submittedStudents.add(e.student_id);
+    });
+    const per: Record<string, number> = {};
+    submittedStudents.forEach((sid) => {
+      const site = stuSite.get(sid)!;
+      per[site] = (per[site] || 0) + 1;
+    });
+    return { per, total: submittedStudents.size };
+  }, [students, evals, siteName]);
 
   function toggle(id: string) {
     setChecked((c) => { const n = new Set(c); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -149,12 +206,17 @@ export default function Results() {
             ) : (
               <div className="tbl-wrap"><table className="tbl tbl-clickable tbl-reports">
                 <thead><tr><th style={{ width: 36 }}></th><th>Assessment Date</th>{locations.map((l) => <th key={l.id}>{l.name}</th>)}<th style={{ textAlign: "center" }}>Total</th></tr></thead>
-                <tbody>{groups.map((g) => (
+                <tbody>{groups.map((g) => {
+                  const { per, total } = countsByGroup(g.id);
+                  return (
                   <tr key={g.id} onClick={() => setActive(g)}>
                     <td onClick={(e) => e.stopPropagation()}><input type="checkbox" className="row-chk" checked={checked.has(g.id)} onChange={() => toggle(g.id)} /></td>
-                    <td><b>{g.assessment_date}</b></td>{locations.map((l) => <td key={l.id}>0</td>)}<td style={{ textAlign: "center" }}>0</td>
+                    <td><b>{g.assessment_date}</b></td>
+                    {locations.map((l) => <td key={l.id} style={{ textAlign: "center" }}>{per[l.name] || 0}</td>)}
+                    <td style={{ textAlign: "center", fontWeight: 700 }}>{total}</td>
                   </tr>
-                ))}</tbody>
+                  );
+                })}</tbody>
               </table></div>
             )}
           </div>
@@ -171,10 +233,79 @@ export default function Results() {
               {siteTabs.map((s) => <button key={s.key} className={`tab ${site === s.key ? "active" : ""}`} onClick={() => setSite(s.key)}>{s.label}</button>)}
             </div>
           </div>
-          <div className="card"><div className="card-pad">
-            <EmptyState icon="clipboard-check" title="No submissions yet"
-              text="Each case will show a panel of evaluators and their submission timestamps once they finish." />
-          </div></div>
+          {(() => {
+            // students in this group, optionally filtered by site tab
+            const groupStudents = students
+              .filter((s) => s.group_id === active.id)
+              .filter((s) => site === "all" || siteName(s.site) === site);
+            const caseName = (id: string) => detailCases.find((c) => c.id === id)?.name || "Case";
+            // submitted evals per student
+            const finishedFor = (sid: string) =>
+              evals
+                .filter((e) => e.student_id === sid && e.status === "finished" && e.submitted_at)
+                .sort((a, b) => (a.submitted_at! < b.submitted_at! ? 1 : -1));
+            // only show students who have at least one submission
+            const rows = groupStudents
+              .map((s) => ({ student: s, finished: finishedFor(s.id) }))
+              .filter((r) => r.finished.length > 0)
+              .sort((a, b) => b.finished.length - a.finished.length);
+
+            if (detailLoading) {
+              return <div className="card"><div className="card-pad"><EmptyState icon="loader" title="Loading submissions…" text="" /></div></div>;
+            }
+            if (rows.length === 0) {
+              return (
+                <div className="card"><div className="card-pad">
+                  <EmptyState icon="clipboard-check" title="No submissions yet"
+                    text="Each case will show a panel of evaluators and their submission timestamps once they finish." />
+                </div></div>
+              );
+            }
+            return (
+              <div className="rep-detail" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {rows.map(({ student, finished }) => {
+                  // group submitted evals by case
+                  const byCase = new Map<string, Evaluation[]>();
+                  finished.forEach((e) => {
+                    const arr = byCase.get(e.case_id) || [];
+                    arr.push(e); byCase.set(e.case_id, arr);
+                  });
+                  return (
+                    <div className="card" key={student.id}><div className="card-pad">
+                      <div className="rep-shead" style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                        {student.photo_url
+                          ? <img src={student.photo_url} alt="" className="av-lg" style={{ width: 48, height: 48, borderRadius: 12, objectFit: "cover" }} />
+                          : <div className="chip-ini" style={{ width: 48, height: 48, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", background: "#e8eef9", fontWeight: 700 }}>{student.name.slice(0, 2).toUpperCase()}</div>}
+                        <div>
+                          <div style={{ fontWeight: 700 }}>{student.name}</div>
+                          <div className="sub" style={{ fontSize: 12.5 }}>{student.qrtexto} · {siteName(student.site)} · {student.slot || "—"}</div>
+                        </div>
+                        <span className="pill pill-green" style={{ marginLeft: "auto" }}>{finished.length} submitted</span>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {Array.from(byCase.entries()).map(([caseId, list]) => (
+                          <div key={caseId} className="rep-case" style={{ border: "1px solid var(--line)", borderRadius: 12, padding: "10px 14px" }}>
+                            <div style={{ fontWeight: 600, fontSize: 13.5, marginBottom: 8 }}>{caseName(caseId)}</div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                              {list.map((e) => (
+                                <div key={e.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+                                  <Icon name="check-circle-2" size={15} style={{ color: "#16a34a" }} />
+                                  <span style={{ flex: 1 }}>{e.evaluator_name || "Evaluator"}</span>
+                                  <span style={{ color: "#94a3b8", fontSize: 12, display: "flex", alignItems: "center", gap: 4 }}>
+                                    <Icon name="clock" size={12} /> {fmtStamp(e.submitted_at)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div></div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </>
       )}
     </Shell>

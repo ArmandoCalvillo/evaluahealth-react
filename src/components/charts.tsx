@@ -108,12 +108,42 @@ export function Area({ categories, data, color = "#2563EB", height = 240, label 
   return <Chart type="area" series={[{ name: label, data }]} options={opts} height={height} />;
 }
 
+/* ---------- Grouped (clustered) bars ---------- */
+export function Grouped({ categories, series, colors, height = 260 }: { categories: string[]; series: { name: string; data: number[] }[]; colors: string[]; height?: number }) {
+  const opts: ApexOptions = {
+    chart: { type: "bar", toolbar: { show: false }, ...NOANIM, fontFamily: FONT },
+    plotOptions: { bar: { borderRadius: 5, columnWidth: "62%", borderRadiusApplication: "end" } },
+    colors, dataLabels: { enabled: false }, legend: { show: true, position: "top", horizontalAlign: "right", fontSize: "12px", labels: { colors: "#475467" }, markers: { size: 6 } },
+    grid: { borderColor: "#eef1f7", strokeDashArray: 4 },
+    xaxis: { categories, labels: { style: { colors: "#8a93a6", fontSize: "12px" } }, axisBorder: { show: false }, axisTicks: { show: false } },
+    yaxis: { labels: { style: { colors: "#8a93a6", fontSize: "12px" } } },
+  };
+  return <Chart type="bar" series={series} options={opts} height={height} />;
+}
+
+/* ---------- Donut with center total ---------- */
+export function DonutTotal({ series, labels, colors, height = 240, total }: { series: number[]; labels: string[]; colors: string[]; height?: number; total: number }) {
+  const opts: ApexOptions = {
+    chart: { type: "donut", ...NOANIM, fontFamily: FONT },
+    labels, colors, legend: { show: false },
+    dataLabels: { enabled: false },
+    stroke: { width: 2, colors: ["#fff"] },
+    plotOptions: { pie: { donut: { size: "72%", labels: { show: true,
+      name: { show: true, offsetY: 22, color: "#8a93a6", fontSize: "13px", fontWeight: 600 },
+      value: { show: true, offsetY: -16, color: "#0F1B3D", fontSize: "30px", fontWeight: 800 },
+      total: { show: true, label: "Total", color: "#8a93a6", fontSize: "13px", fontWeight: 600, formatter: () => String(total) },
+    } } } },
+    tooltip: { enabled: true },
+  };
+  return <Chart type="donut" series={series} options={opts} height={height} />;
+}
+
 /* ---------- Stacked bars ---------- */
 export function Stacked({ categories, series, colors, height = 260 }: { categories: string[]; series: { name: string; data: number[] }[]; colors: string[]; height?: number }) {
   const opts: ApexOptions = {
     chart: { type: "bar", stacked: true, toolbar: { show: false }, ...NOANIM, fontFamily: FONT },
     plotOptions: { bar: { borderRadius: 5, columnWidth: "48%" } },
-    colors, dataLabels: { enabled: false }, legend: { show: true, position: "top", fontSize: "12px", labels: { colors: "#475467" } },
+    colors, dataLabels: { enabled: false }, legend: { show: true, position: "top", horizontalAlign: "right", fontSize: "12px", labels: { colors: "#475467" }, markers: { size: 6 } },
     grid: { borderColor: "#eef1f7", strokeDashArray: 4 },
     xaxis: { categories, labels: { style: { colors: "#8a93a6", fontSize: "12px" } }, axisBorder: { show: false }, axisTicks: { show: false } },
     yaxis: { labels: { style: { colors: "#8a93a6", fontSize: "12px" } } },

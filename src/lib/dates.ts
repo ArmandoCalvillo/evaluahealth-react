@@ -23,3 +23,10 @@ export function isEditLocked(submittedAt: string | null | undefined): boolean {
   const ageMs = Date.now() - submitted;
   return ageMs > EDIT_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 }
+
+// Returns true when an assessment date is in the past (the day is over) and its
+// submitted evaluations must stay locked. Today and future dates remain editable.
+export function isDateLocked(assessmentDate: string | null | undefined): boolean {
+  if (!assessmentDate) return false;
+  return assessmentDate.slice(0, 10) < todayStr();
+}

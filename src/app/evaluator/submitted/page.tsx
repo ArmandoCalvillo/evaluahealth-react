@@ -5,9 +5,9 @@ import Icon from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
 import EvalDrawer, { type EvalTarget } from "@/components/EvalDrawer";
 import { useAuth } from "@/lib/auth";
-import { listMyEvaluations, listStudents, listCases } from "@/lib/db";
+import { listMyEvaluations, listStudents, listCases, listGroups } from "@/lib/db";
 import type { Evaluation, Student } from "@/lib/types";
-import { isEditLocked } from "@/lib/dates";
+import { isDateLocked } from "@/lib/dates";
 
 function fmtDate(s: string) {
   if (!s) return "";
@@ -19,7 +19,7 @@ function fmtDateTime(iso: string | null) {
   return new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
-interface Row { ev: Evaluation; student?: Student; caseName: string }
+interface Row { ev: Evaluation; student?: Student; caseName: string; assessmentDate: string }
 
 export default function Submitted() {
   const { profile } = useAuth();
@@ -38,7 +38,15 @@ export default function Submitted() {
       const allCases = await listCases();
       const cmap: Record<string, string> = {};
       allCases.forEach((c) => { cmap[c.id] = c.name; });
-      setRows(evs.map((ev) => ({ ev, student: smap[ev.student_id], caseName: cmap[ev.case_id] || "Caso" })));
+      // map group_id -> assessment_date so submitted evaluations stay in their batch's date
+      const allGroups = await listGroups();
+      const gmap: Record<string, string> = {};
+      allGroups.forEach((g) => { gmap[g.id] = g.assessment_date; });
+      setRows(evs.map((ev) => {
+        const student = smap[ev.student_id];
+        const assessmentDate = (student?.group_id && gmap[student.group_id]) || (ev.submitted_at || "").slice(0, 10);
+        return { ev, student, caseName: cmap[ev.case_id] || "Caso", assessmentDate };
+      }));
     } catch { setRows([]); }
   };
 
@@ -52,13 +60,14 @@ export default function Submitted() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id]);
 
-  // group by submission date
+  // group by the student's batch assessment date (NOT the submission timestamp),
+  // so an eval submitted later still stays in its batch's date
   const dates = useMemo(() => {
     const by: Record<string, { set: Set<string>; latest: string }> = {};
     rows.forEach((r) => {
-      const iso = r.ev.submitted_at || "";
-      const d = iso.slice(0, 10);
+      const d = r.assessmentDate;
       if (!d) return;
+      const iso = r.ev.submitted_at || "";
       const b = (by[d] ||= { set: new Set(), latest: iso });
       b.set.add(r.ev.student_id);
       if (iso > b.latest) b.latest = iso;
@@ -69,7 +78,7 @@ export default function Submitted() {
   }, [rows]);
 
   const activeRows = useMemo(() =>
-    rows.filter((r) => (r.ev.submitted_at || "").slice(0, 10) === active)
+    rows.filter((r) => r.assessmentDate === active)
       .sort((a, b) => ((b.ev.submitted_at || "") > (a.ev.submitted_at || "") ? 1 : -1)),
     [rows, active]);
 
@@ -77,7 +86,7 @@ export default function Submitted() {
     <Shell portal="evaluator" title="Submitted" sub="Your submitted evaluations by date">
       {!active ? (
         <div className="card">
-          <div className="card-head"><div><h3>Evaluation Dates</h3><div className="sub">Evaluations can be edited for 2 days after submission, then they lock</div></div></div>
+          <div className="card-head"><div><h3>Evaluation Dates</h3><div className="sub">Evaluations stay editable until the assessment day is over, then they lock</div></div></div>
           <div className="card-pad" style={{ padding: dates.length ? 0 : undefined }}>
             {loading ? <div className="empty-sm">Cargando…</div>
               : dates.length === 0 ? (
@@ -87,7 +96,7 @@ export default function Submitted() {
                 <div className="tbl-wrap"><table className="tbl tbl-clickable">
                   <thead><tr><th>Evaluation Date</th><th>Number of Students Evaluated</th><th></th></tr></thead>
                   <tbody>{dates.map((d) => {
-                    const locked = isEditLocked(d.latest);
+                    const locked = isDateLocked(d.date);
                     return (
                     <tr key={d.date} onClick={() => setActive(d.date)}>
                       <td><b>{fmtDate(d.date)}</b></td>
@@ -116,7 +125,7 @@ export default function Submitted() {
                 <div className="tbl-wrap"><table className="tbl">
                   <thead><tr><th>Student</th><th>ID</th><th>Site</th><th>Slot</th><th>Case</th><th>Submitted At</th><th style={{ width: 56 }}></th></tr></thead>
                   <tbody>{activeRows.map((r) => {
-                    const locked = isEditLocked(r.ev.submitted_at);
+                    const locked = isDateLocked(r.assessmentDate);
                     return (
                     <tr key={r.ev.id}>
                       <td>
@@ -134,8 +143,8 @@ export default function Submitted() {
                       <td>{fmtDateTime(r.ev.submitted_at)}</td>
                       <td>
                         {locked
-                          ? <span className="icon-btn is-locked" title="Bloqueada (más de 2 días)"><Icon name="lock" size={15} /></span>
-                          : <button className="icon-btn" title="Editar evaluación" onClick={() => setEditTarget({ student: r.student ?? null, studentId: r.ev.student_id, caseId: r.ev.case_id, caseName: r.caseName })}><Icon name="pencil" size={15} /></button>}
+                          ? <span className="icon-btn is-locked" title="Bloqueada (el día de la evaluación terminó)"><Icon name="lock" size={15} /></span>
+                          : <button className="icon-btn" title="Editar evaluación" onClick={() => setEditTarget({ student: r.student ?? null, studentId: r.ev.student_id, caseId: r.ev.case_id, caseName: r.caseName, assessmentDate: r.assessmentDate })}><Icon name="pencil" size={15} /></button>}
                       </td>
                     </tr>
                   ); })}</tbody>

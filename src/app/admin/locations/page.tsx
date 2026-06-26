@@ -10,7 +10,7 @@ import { SUPABASE_READY } from "@/lib/supabase";
 import { listLocations, createLocation, updateLocation, deleteLocation, listStudents, listEvaluators } from "@/lib/db";
 import type { Location } from "@/lib/types";
 
-const COLORS = ["#2563EB", "#7c3aed", "#0d9488", "#f59e0b", "#e11d48", "#0ea5e9"];
+const COLORS = ["#2563EB", "#7c3aed", "#0d9488", "#f59e0b", "#e11d48", "#0ea5e9", "#16a34a", "#db2777", "#ea580c", "#6366f1", "#0891b2"];
 
 export default function Locations() {
   const toast = useToast();

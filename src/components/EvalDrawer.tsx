@@ -8,7 +8,7 @@ import {
   listQuestions, listEvaluations, createEvaluation, updateEvaluation,
 } from "@/lib/db";
 import type { Question, Evaluation, Student } from "@/lib/types";
-import { isEditLocked } from "@/lib/dates";
+import { isDateLocked } from "@/lib/dates";
 
 const RUBRIC_OPTS = [
   { ttl: "Insuficiente", ds: "No cumple con los criterios mínimos esperados." },
@@ -22,6 +22,7 @@ export interface EvalTarget {
   studentId: string;
   caseId: string;
   caseName: string;
+  assessmentDate?: string;        // the batch date this student belongs to (drives the lock)
 }
 
 /**
@@ -68,8 +69,8 @@ export default function EvalDrawer({
         const finishedAt = mine.status === "finished" ? (mine.submitted_at ?? null) : null;
         setDoneAt(finishedAt);
         // Open the edit form directly — skip the "Evaluación terminada" screen.
-        // Still respect the lock window: if it's older than the edit window, keep it read-only.
-        if (finishedAt && !isEditLocked(finishedAt)) setEditing(true);
+        // Lock once the assessment date is over (past); today/future stay editable.
+        if (finishedAt && !isDateLocked(target.assessmentDate)) setEditing(true);
       }
     } catch { setQuestions([]); }
     setLoading(false);
@@ -156,7 +157,7 @@ export default function EvalDrawer({
   }
 
   const s = target?.student || null;
-  const locked = doneAt ? isEditLocked(doneAt) : false;
+  const locked = doneAt ? isDateLocked(target?.assessmentDate) : false;
   const showForm = !doneAt || editing;
 
   const footer = showForm && questions.length > 0 && !loading ? (
@@ -201,8 +202,8 @@ export default function EvalDrawer({
               <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 6 }}>Evaluación terminada</div>
               <div className="sub" style={{ maxWidth: 360, margin: "0 auto" }}>
                 {locked
-                  ? "Esta evaluación se cerró hace más de 2 días y ya no puede modificarse."
-                  : "Ya enviaste tu evaluación para este caso. Puedes reeditarla o reiniciarla durante 2 días."}
+                  ? "El día de la evaluación ya terminó y esta evaluación quedó bloqueada."
+                  : "Ya enviaste tu evaluación para este caso. Puedes reeditarla mientras siga abierto el día de la evaluación."}
               </div>
               <div style={{ marginTop: 10, fontSize: 13, color: "#16a34a", fontWeight: 700 }}>
                 Enviado el {new Date(doneAt).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}

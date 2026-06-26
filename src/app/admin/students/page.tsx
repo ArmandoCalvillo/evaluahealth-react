@@ -44,6 +44,9 @@ export default function Students() {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [startedDates, setStartedDates] = useState<Set<string>>(new Set());
   const [counts, setCounts] = useState<Record<string, { total: number; byLoc: Record<string, number> }>>({});
+  const [allStudents, setAllStudents] = useState<Student[]>([]);
+  const [finishedEvals, setFinishedEvals] = useState<Evaluation[]>([]);
+  const [allCases, setAllCases] = useState<CaseRow[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [active, setActive] = useState<Group | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
@@ -100,12 +103,15 @@ export default function Students() {
       const bs = await listBatches();
       setBatches(bs);
       const cs = await listCases();                     // all cases across batches
+      setAllCases(cs);
       const batchIdsWithCases = new Set(cs.map((c) => c.batch_id));
       setStartedDates(new Set(bs.filter((b) => batchIdsWithCases.has(b.id)).map((b) => b.assessment_date)));
     } catch { /* */ }
     try { setLocations(await listLocations()); } catch { /* */ }
+    try { setFinishedEvals((await listEvaluations()).filter((e) => e.status === "finished")); } catch { /* */ }
     try {
       const all = await listStudents();
+      setAllStudents(all);
       const map: Record<string, { total: number; byLoc: Record<string, number> }> = {};
       for (const s of all) {
         const gid = (s as Student).group_id;
@@ -297,6 +303,7 @@ export default function Students() {
           setImportProg({ done: i, total: preview.length });
           const photo = r.photo_url ? await uploadFromUrl("student-photos", r.photo_url) : null;
           const idcard = r.idcard_url ? await uploadFromUrl("student-idcards", r.idcard_url) : null;
+          setImportProg({ done: i + 1, total: preview.length });
           const loc = resolveLocation(r.site);
           rows.push({
             group_id: active.id,
@@ -328,6 +335,7 @@ export default function Students() {
   return (
     <Shell portal="admin" title="Students" sub="Assessment groups, organized by date">
       {!active ? (
+        <div>
         <div className="card">
           <div className="card-head">
             <div><h3>Assessment Groups</h3><div className="sub">Each group is identified by its assessment date</div></div>
@@ -379,6 +387,7 @@ export default function Students() {
             )}
           </div>
         </div>
+        </div>
       ) : (
         <>
           <div className="group-ctx" style={{ marginBottom: 16 }}>
@@ -424,7 +433,9 @@ export default function Students() {
                 </div>
                 <div className="st-meta"><span className="slot-chip"><Icon name="map-pin" size={13} /> {s.site}</span><span className="slot-chip"><Icon name="clock" size={13} /> {s.slot}</span></div>
                 <div className="st-cases">
-                  {(groupCases.length ? groupCases : [0, 1, 2]).map((c, i) => {
+                  {groupCases.length === 0 ? (
+                    <div className="st-nocases"><Icon name="clipboard-list" size={15} /> No cases added yet</div>
+                  ) : groupCases.map((c, i) => {
                     const caseId = groupCases[i]?.id;
                     const st = caseId ? caseStatus(s.id, caseId) : { state: "no" as const, dots: ["no", "no", "no"] as ("ok" | "prog" | "no")[] };
                     const icon = st.state === "ok" ? "check-circle-2" : st.state === "prog" ? "clock" : "circle";
@@ -632,6 +643,20 @@ export default function Students() {
           </>
         ) : (
           <>
+            {importing && importProg ? (
+              <div className="import-progress">
+                <div className="ip-top">
+                  <div className="ip-spin"><Icon name="loader" size={18} /></div>
+                  <div className="ip-text">
+                    <div className="ip-title">Importing students…</div>
+                    <div className="ip-sub">Saving photos &amp; ID cards. Please keep this window open.</div>
+                  </div>
+                  <div className="ip-count"><b>{importProg.done}</b><span>/ {importProg.total}</span></div>
+                </div>
+                <div className="ip-bar"><div className="ip-fill" style={{ width: `${importProg.total ? Math.round((importProg.done / importProg.total) * 100) : 0}%` }} /></div>
+                <div className="ip-foot">{importProg.total ? Math.round((importProg.done / importProg.total) * 100) : 0}% complete · {importProg.total - importProg.done} remaining</div>
+              </div>
+            ) : null}
             {unmatchedCodes.length > 0 ? (
               <div className="hint-box" style={{ marginBottom: 14, background: "#fef2f2", borderColor: "#fecaca", color: "#b91c1c" }}>
                 <Icon name="alert-triangle" size={16} />

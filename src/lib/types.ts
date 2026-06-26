@@ -70,6 +70,7 @@ export interface Student {
   idcard_url: string | null;
   site: string | null;
   slot: string | null;
+  reopened_at: string | null;
   created_at: string;
 }
 

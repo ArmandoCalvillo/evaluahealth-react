@@ -799,3 +799,169 @@ td.nowrap,.pill.nowrap{white-space:nowrap}
 .gp-dots{display:inline-flex;gap:5px}
 .gp-dot{width:11px;height:11px;border-radius:50%;background:#e2e8f0}
 .gp-dot.gp-dot-on{background:#16a34a}
+
+/* ===== Dashboard time-scope toggle ===== */
+.scope-toggle{display:inline-flex;background:#fff;border:1px solid var(--line-2);border-radius:12px;padding:4px;gap:2px;box-shadow:var(--shadow)}
+.scope-btn{display:inline-flex;align-items:center;gap:6px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:700;padding:8px 14px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s}
+.scope-btn:hover{color:var(--ink)}
+.scope-btn.active{background:var(--brand);color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+@media(max-width:760px){
+  .scope-toggle{width:100%;overflow-x:auto}
+  .scope-btn{flex:1;justify-content:center;padding:8px 10px;font-size:12px}
+}
+
+/* ===== Upcoming-assessment banner (Live mode, nothing today) ===== */
+.upcoming-banner{
+  display:flex;align-items:center;gap:14px;
+  background:linear-gradient(180deg,#eef4ff,#e6eeff);
+  border:1px solid #c9dbff;border-radius:16px;
+  padding:16px 18px;box-shadow:var(--shadow);
+}
+.upcoming-banner .ub-ic{
+  flex:0 0 auto;width:46px;height:46px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;
+  background:#2563EB;color:#fff;box-shadow:0 6px 14px rgba(37,99,235,.28);
+}
+.upcoming-banner .ub-body{flex:1 1 auto;min-width:0}
+.upcoming-banner .ub-title{font-weight:700;color:#102a56;font-size:15px;line-height:1.3}
+.upcoming-banner .ub-sub{color:#48566f;font-size:13px;margin-top:3px;line-height:1.45}
+.upcoming-banner .ub-pill{flex:0 0 auto;margin-left:auto}
+@media (max-width:680px){
+  .upcoming-banner{flex-wrap:wrap}
+  .upcoming-banner .ub-pill{margin-left:0;order:3}
+}
+
+/* ===== Students import progress widget ===== */
+.import-progress{background:linear-gradient(180deg,#eef4ff,#e6efff);border:1.5px solid #c7d9ff;border-radius:16px;padding:16px 18px;margin-bottom:16px;box-shadow:0 6px 20px rgba(37,99,235,.10)}
+.import-progress .ip-top{display:flex;align-items:center;gap:13px}
+.import-progress .ip-spin{flex:0 0 auto;width:40px;height:40px;border-radius:50%;background:#fff;border:1.5px solid #c7d9ff;display:flex;align-items:center;justify-content:center;color:#2563EB}
+.import-progress .ip-spin svg{animation:ip-rot 1s linear infinite}
+@keyframes ip-rot{to{transform:rotate(360deg)}}
+.import-progress .ip-text{flex:1;min-width:0}
+.import-progress .ip-title{font-weight:800;font-size:14.5px;color:#16243F}
+.import-progress .ip-sub{font-size:12px;color:#5b6b86;margin-top:1px}
+.import-progress .ip-count{flex:0 0 auto;display:flex;align-items:baseline;gap:4px;font-variant-numeric:tabular-nums}
+.import-progress .ip-count b{font-size:24px;font-weight:800;color:#2563EB;line-height:1}
+.import-progress .ip-count span{font-size:13px;color:#7a89a3;font-weight:600}
+.import-progress .ip-bar{margin-top:13px;height:10px;border-radius:99px;background:#d4e1fb;overflow:hidden}
+.import-progress .ip-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#2563EB,#4f8cff);transition:width .3s ease;box-shadow:0 0 10px rgba(37,99,235,.45)}
+.import-progress .ip-foot{margin-top:8px;font-size:11.5px;font-weight:600;color:#3a5a9e;text-align:right}
+
+/* ===== Site Tracker (assessment progress by site) ===== */
+.strk-wrap{display:flex;flex-direction:column;gap:22px}
+.strk-site{display:flex;flex-direction:column;gap:10px}
+.strk-sitehd{display:flex;align-items:center;gap:9px;font-size:15px;color:#16243F;padding-left:2px}
+.strk-sitehd b{font-weight:800}
+.strk-dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 3px rgba(0,0,0,.04)}
+.strk-dotr{width:7px;height:7px;border-radius:50%;background:#e11d48;display:inline-block}
+.strk-list{display:flex;flex-direction:column;gap:10px}
+.strk-row{display:flex;align-items:center;gap:16px;border:1px solid var(--line);border-radius:14px;padding:14px 18px;background:#fff;transition:box-shadow .15s,border-color .15s,transform .15s}
+.strk-row.strk-click{cursor:pointer}
+.strk-row.strk-click:hover{border-color:#c7d9ff;box-shadow:0 6px 18px rgba(37,99,235,.10);transform:translateY(-1px)}
+.strk-row.strk-attn{border-color:#f6d5d5;background:#fff6f6}
+.strk-rowlabel{flex:0 0 150px;min-width:0}
+.strk-slot{font-size:14px;font-weight:800;color:#16243F}
+.strk-students{font-size:12px;color:#8a97ad;font-weight:600;margin-top:2px}
+.strk-bar{flex:1 1 auto;height:11px;border-radius:99px;background:#e7eaf0;overflow:hidden;min-width:80px;display:flex}
+.strk-fill{height:100%;border-radius:99px;transition:width .4s ease}
+.strk-seg{height:100%;transition:width .4s ease}
+.strk-pills{display:flex;align-items:center;gap:8px;flex:0 0 auto;flex-wrap:wrap;justify-content:flex-end}
+.strk-chev{color:#9aa7bd;flex:0 0 auto}
+@media(max-width:760px){
+  .strk-row{flex-wrap:wrap}
+  .strk-rowlabel{flex:1 1 100%}
+  .strk-bar{flex:1 1 100%;order:3}
+  .strk-pills{flex:1 1 100%;justify-content:flex-start;order:2}
+}
+
+/* ===== Historical assessment list (by date) ===== */
+.hist-list{display:flex;flex-direction:column;gap:2px}
+.hist-row{display:flex;align-items:center;gap:14px;padding:13px 4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.hist-row:last-child{border-bottom:none}
+.hist-date{display:flex;align-items:center;gap:8px;color:#16243F;font-size:14px;min-width:130px}
+.hist-date b{font-weight:800}
+.hist-locs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1}
+.hist-loc{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:#5b6b86;background:#f5f8fd;border:1px solid var(--line);border-radius:99px;padding:4px 11px;font-weight:600}
+.hist-loc b{color:#16243F;font-weight:800}
+.hist-total{font-size:12.5px;font-weight:800;color:#16243F;background:var(--brand-soft);color:var(--brand);border-radius:99px;padding:5px 12px;margin-left:auto}
+
+/* ===== Completion by Case — donut + per-case % legend ===== */
+.case-completion{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:8px 4px}
+.case-completion>*:first-child{flex:1 1 240px;min-width:200px}
+.cc-legend{flex:1 1 200px;min-width:180px;display:flex;flex-direction:column;gap:10px}
+.cc-legend .cl-row{display:flex;align-items:center;gap:10px;font-size:13px}
+.cc-legend .cl-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.cc-legend .cl-name{flex:1;color:var(--ink-2);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-legend .cl-pct{font-weight:800;color:var(--ink-1);font-variant-numeric:tabular-nums}
+@media(max-width:560px){.case-completion{flex-direction:column;align-items:stretch}}
+
+/* ===== Tracker pending-students drawer ===== */
+.tdraw{display:flex;flex-direction:column;gap:18px}
+.tdraw-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tdraw-pill{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:99px;font-weight:800;font-size:17px;line-height:1}
+.tdraw-loc{background:var(--brand-soft);color:var(--ink-1)}
+.tdraw-slot{background:#f1f5f9;color:var(--ink-1)}
+.tdraw-sep{color:var(--ink-3);font-weight:700;font-size:18px}
+.tdraw-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tdraw-stat{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 8px;border:1.5px solid var(--line);border-radius:14px;background:#fff;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s}
+.tdraw-stat:hover{transform:translateY(-1px)}
+.tdraw-stat.active{background:#fafcff}
+.tdraw-stat .ts-val{font-size:24px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.tdraw-stat .ts-lbl{font-size:11.5px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em;text-align:center}
+.tdraw-listlbl{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em}
+.tdraw-listlbl b{color:var(--brand);font-size:13px}
+.tdraw-students{display:flex;flex-direction:column;gap:12px}
+.tdraw-card{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:#fff;display:flex;flex-direction:column;gap:10px}
+.tdraw-shead{display:flex;align-items:center;gap:12px}
+.tdraw-sinfo{flex:1;min-width:0}
+.tdraw-sname{font-weight:800;color:var(--ink-1);font-size:14.5px}
+.tdraw-sid{font-size:12px;color:var(--ink-3);font-family:var(--mono,monospace)}
+.tdraw-prog{font-size:12.5px;font-weight:700;color:var(--ink-2)}
+.tdraw-caseblk{padding-top:10px;border-top:1px dashed var(--line)}
+.tdraw-caseblk:first-of-type{border-top:none;padding-top:2px}
+.tdraw-pend{display:flex;flex-direction:column;gap:6px;padding-top:8px;border-top:1px dashed var(--line)}
+.tdraw-pendline{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px}
+.tdraw-case{color:var(--ink-2);font-weight:600}
+.tdraw-pendn{color:#b45309;font-weight:700;background:#fef3c7;padding:2px 9px;border-radius:99px;font-size:11.5px}
+@media(max-width:560px){.tdraw-stats{grid-template-columns:repeat(2,1fr)}}
+
+/* ===== Student card: no cases attached ===== */
+.st-nocases{display:flex;align-items:center;gap:7px;padding:9px 4px;color:#98a2b3;font-size:12.5px;font-weight:600}
+
+/* ===== Clickable historical tracker rows ===== */
+.hist-row-click{cursor:pointer;border-radius:10px;padding-left:10px;padding-right:10px;transition:background .12s}
+.hist-row-click:hover{background:#f5f8fd}
+.hist-row-click .lucide{color:#94a3b8;margin-left:auto}
+.hist-row-click:hover .lucide{color:#2563EB}
+
+/* ===== Drawer: per-doctor status badges ===== */
+.gp-doc-row{display:flex;align-items:center;gap:10px;width:100%}
+.gp-doc-row .gp-doc-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.gp-doc-row .gp-doc-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gp-doc-row .gp-doc-time{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:#94a3b8;white-space:nowrap}
+.gp-doc-status{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:7px;font-size:11px;font-weight:800;letter-spacing:.02em;flex-shrink:0}
+.gp-doc-await{opacity:.62}
+
+/* ===== Drawer: evaluation-not-started / per-case notes ===== */
+.tdraw-casehd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+.tdraw-casetitle{font-size:13.5px;font-weight:800;color:#0f172a;letter-spacing:.01em}
+.tdraw-casebadge{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:999px;font-size:11.5px;font-weight:800;letter-spacing:.01em;flex-shrink:0}
+.tdraw-notstarted,.tdraw-casenote{display:flex;align-items:center;gap:7px;color:#94a3b8;font-size:12.5px;font-weight:600;padding:6px 0}
+.tdraw-casenote{padding:4px 0 8px}
+
+/* ===== Drawer: simplified (clean) student/eval rows ===== */
+.tdraw-subpill{flex-shrink:0;align-self:flex-start;font-size:11.5px;font-weight:700;color:#16a34a;background:#dcfce7;padding:3px 11px;border-radius:999px}
+.tdraw-evlist{display:flex;flex-direction:column;gap:7px;margin-top:7px}
+.tdraw-evrow{display:flex;align-items:center;gap:9px;font-size:13px}
+.tdraw-evname{flex:1;min-width:0;color:#334155;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tdraw-evtime{display:inline-flex;align-items:center;gap:5px;color:#94a3b8;font-size:12px;font-weight:500;white-space:nowrap;flex-shrink:0}
+.tdraw-caseblk .tdraw-casetitle{margin-bottom:2px}
+
+/* ===== Drawer: historical date scrubber ===== */
+.tdraw-scrub{display:flex;flex-direction:column;gap:7px;padding:11px 13px;background:#f7f9fc;border:1px solid var(--line);border-radius:12px}
+.tdraw-scrub-head{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ink)}
+.tdraw-scrub-head .lucide{color:#2563EB}
+.tdraw-scrub-date{font-weight:800}
+.tdraw-scrub-tag{margin-left:auto;font-size:11px;font-weight:800;color:#2563EB;background:#e8f0fe;padding:2px 9px;border-radius:99px}
+.tdraw-range{width:100%;accent-color:#2563EB;cursor:pointer}
+.tdraw-scrub-ends{display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#98a2b3}

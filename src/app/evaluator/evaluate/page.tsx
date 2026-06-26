@@ -10,7 +10,7 @@ import {
   listEvaluations, createEvaluation, updateEvaluation,
 } from "@/lib/db";
 import type { Group, Student, Batch, CaseRow, Question, Evaluation } from "@/lib/types";
-import { todayStr, fmtDate, isEditLocked } from "@/lib/dates";
+import { todayStr, fmtDate, isDateLocked } from "@/lib/dates";
 
 const RUBRIC_OPTS = [
   { ttl: "Insuficiente", ds: "No cumple con los criterios mínimos esperados." },
@@ -284,18 +284,18 @@ export default function Evaluate() {
           <div className="card">
             <div className="card-pad" style={{ textAlign: "center", padding: "48px 24px" }}>
               <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#dcfce7", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-                <Icon name={isEditLocked(doneAt) ? "lock" : "check-circle-2"} size={34} style={{ color: "#16a34a" }} />
+                <Icon name={isDateLocked(todayStr()) ? "lock" : "check-circle-2"} size={34} style={{ color: "#16a34a" }} />
               </div>
               <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 6 }}>Evaluación Terminada</div>
               <div className="sub" style={{ maxWidth: 440, margin: "0 auto 4px" }}>
-                {isEditLocked(doneAt)
-                  ? "Esta evaluación se cerró hace más de 2 días y ya no puede modificarse."
-                  : "Ya enviaste tu evaluación para este caso. Puedes reeditarla o reiniciarla durante 2 días."}
+                {isDateLocked(todayStr())
+                  ? "El día de la evaluación ya terminó y esta evaluación quedó bloqueada."
+                  : "Ya enviaste tu evaluación para este caso. Puedes reeditarla o reiniciarla mientras siga abierto el día de la evaluación."}
               </div>
               <div style={{ marginTop: 12, fontSize: 13, color: "#16a34a", fontWeight: 700 }}>
                 Enviado el {new Date(doneAt).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}
               </div>
-              {!isEditLocked(doneAt) && (
+              {!isDateLocked(todayStr()) && (
                 <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 22, flexWrap: "wrap" }}>
                   <button className="btn btn-pri" type="button" onClick={() => setDoneAt(null)}>
                     <Icon name="pencil" size={15} /> Reeditar evaluación
