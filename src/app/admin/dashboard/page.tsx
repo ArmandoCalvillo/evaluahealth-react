@@ -233,11 +233,16 @@ export default function Dashboard() {
     return !(t > 0 && fin >= t) && (fin > 0 || startedAllIds.has(s.id)) && !isAbsent(s.id);
   }).length;
   const compNotStarted = Math.max(0, completionDenom - fullyDone - compInProgress - absentInScope);
-  // panel-level progress (finished evaluator-panels vs total expected) — absentees' panels stay in the denominator
+  // panel-level progress (finished evaluator-panels vs expected) — only counts panels that were
+  // ACTUALLY convened. A panel exists for a student+case only if ≥1 evaluator opened it; its size
+  // is the real number of evaluators who engaged (1, 2, or 3), NOT an assumed full 3-person panel.
+  // No-shows / not-started students have no convened panel → contribute 0 to expected.
+  const convenedSize = (studentId: string, caseId: string): number =>
+    panelMap.get(`${studentId}|${caseId}`)?.size || 0; // 0 if nobody opened it
   const panelExpected = fStudents.reduce((sum, s) =>
-    sum + casesForStudent(s.id).reduce((c, cs) => c + panelSize(s.id, cs.id), 0), 0);
+    sum + casesForStudent(s.id).reduce((c, cs) => c + convenedSize(s.id, cs.id), 0), 0);
   const panelFinished = fStudents.reduce((sum, s) =>
-    sum + Math.min(finishedByStudent.get(s.id) || 0, casesForStudent(s.id).reduce((c, cs) => c + panelSize(s.id, cs.id), 0)), 0);
+    sum + Math.min(finishedByStudent.get(s.id) || 0, casesForStudent(s.id).reduce((c, cs) => c + convenedSize(s.id, cs.id), 0)), 0);
   const panelPct = panelExpected ? Math.round((panelFinished / panelExpected) * 100) : 0;
 
   // ---- 2) Evaluations per Scheduled Group Hour (grouped bars, by site) ----
