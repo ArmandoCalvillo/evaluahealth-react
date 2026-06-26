@@ -148,7 +148,8 @@ export default function SiteTracker({
                 <div className="strk-pills">
                   <span className="pill pill-green">{r.done} done</span>
                   {r.progress > 0 && <span className="pill pill-amber">{r.progress} in progress</span>}
-                  {r.absent > 0 && <span className="pill pill-grey">{r.absent} did not appear</span>}
+                  {r.notStarted > 0 && <span className="pill pill-slate">{r.notStarted} not started</span>}
+                  {r.absent > 0 && <span className="pill pill-danger">{r.absent} did not appear</span>}
                   {r.needsAttention && (
                     <span className="pill pill-danger">Needs attention</span>
                   )}

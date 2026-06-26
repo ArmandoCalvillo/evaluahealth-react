@@ -700,6 +700,7 @@ td.nowrap,.pill.nowrap{white-space:nowrap}
 
 /* Locked (already-processed) assessment states */
 .pill-grey{background:#eef1f5;color:#64748b;display:inline-flex;align-items:center;gap:4px}
+.pill-slate{background:#eef2f7;color:#94a3b8;display:inline-flex;align-items:center;gap:4px}
 .btn.is-locked{opacity:.55;cursor:not-allowed;color:#94a3b8}
 .btn.is-locked:hover{background:transparent}
 .icon-btn.is-locked{opacity:.5;cursor:not-allowed;color:#94a3b8}
