@@ -220,10 +220,11 @@ export default function Dashboard() {
   finishedEvals.forEach((e) => finishedByStudent.set(e.student_id, (finishedByStudent.get(e.student_id) || 0) + 1));
 
   // ---- 1) Evaluation Completion (overall rate) ----
-  // absent ("Did not appear") students are excluded from the denominator so % can reach 100
+  // Every student in scope counts toward the denominator — including "Did not appear"
+  // (a no-show is an incomplete evaluation, not an exclusion).
   const absentInScope = fStudents.filter((s) => isAbsent(s.id)).length;
   const totalStudentsScope = fStudents.length;
-  const completionDenom = Math.max(0, totalStudentsScope - absentInScope);
+  const completionDenom = totalStudentsScope;
   const fullyDone = fStudents.filter((s) => { const t = studentTarget(s.id); return t > 0 && (finishedByStudent.get(s.id) || 0) >= t; }).length;
   const completionRate = completionDenom ? Math.round((fullyDone / completionDenom) * 100) : 0;
   // student-level breakdown (drives the explainer under the gauge)
@@ -231,12 +232,12 @@ export default function Dashboard() {
     const t = studentTarget(s.id); const fin = finishedByStudent.get(s.id) || 0;
     return !(t > 0 && fin >= t) && (fin > 0 || startedAllIds.has(s.id)) && !isAbsent(s.id);
   }).length;
-  const compNotStarted = Math.max(0, completionDenom - fullyDone - compInProgress);
-  // panel-level progress (finished evaluator-panels vs total expected) — finer signal than student-level
-  const panelExpected = fStudents.reduce((sum, s) => isAbsent(s.id) ? sum
-    : sum + casesForStudent(s.id).reduce((c, cs) => c + panelSize(s.id, cs.id), 0), 0);
-  const panelFinished = fStudents.reduce((sum, s) => isAbsent(s.id) ? sum
-    : sum + Math.min(finishedByStudent.get(s.id) || 0, casesForStudent(s.id).reduce((c, cs) => c + panelSize(s.id, cs.id), 0)), 0);
+  const compNotStarted = Math.max(0, completionDenom - fullyDone - compInProgress - absentInScope);
+  // panel-level progress (finished evaluator-panels vs total expected) — absentees' panels stay in the denominator
+  const panelExpected = fStudents.reduce((sum, s) =>
+    sum + casesForStudent(s.id).reduce((c, cs) => c + panelSize(s.id, cs.id), 0), 0);
+  const panelFinished = fStudents.reduce((sum, s) =>
+    sum + Math.min(finishedByStudent.get(s.id) || 0, casesForStudent(s.id).reduce((c, cs) => c + panelSize(s.id, cs.id), 0)), 0);
   const panelPct = panelExpected ? Math.round((panelFinished / panelExpected) * 100) : 0;
 
   // ---- 2) Evaluations per Scheduled Group Hour (grouped bars, by site) ----
@@ -596,7 +597,7 @@ export default function Dashboard() {
                 <Gauge value={completionRate} color="#16a34a" height={190} label="fully evaluated" />
                 <div className="comp-formula">
                   <b>{fullyDone}</b> of <b>{completionDenom}</b> students fully evaluated
-                  {absentInScope > 0 && <span className="comp-note"> · {absentInScope} excluded (did not appear)</span>}
+                  {absentInScope > 0 && <span className="comp-note"> · incl. {absentInScope} who did not appear</span>}
                 </div>
                 <div className="comp-bd">
                   <div className="comp-row">
@@ -615,8 +616,8 @@ export default function Dashboard() {
                     <span className="comp-val">{compNotStarted}</span>
                   </div>
                   {absentInScope > 0 && (
-                    <div className="comp-row comp-muted">
-                      <span className="comp-dot" style={{ background: "#e2e8f0" }} />
+                    <div className="comp-row">
+                      <span className="comp-dot" style={{ background: "#e11d48" }} />
                       <span className="comp-lbl">Did not appear</span>
                       <span className="comp-val">{absentInScope}</span>
                     </div>

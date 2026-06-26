@@ -19,12 +19,12 @@ export interface SlotRow {
   key: string;
   site: string;        // site/location name
   slot: string;        // e.g. "10:00 AM"
-  total: number;       // students counted in completion (excludes no-shows)
-  headcount: number;   // all students in this site + slot (incl. no-shows)
+  total: number;       // denominator = ALL students (no-shows included as incomplete)
+  headcount: number;   // all students in this site + slot
   done: number;        // students fully evaluated
   progress: number;    // students started but not fully done
   notStarted: number;  // students with zero evaluations
-  absent: number;      // students who did not appear (excluded from denominator)
+  absent: number;      // students who did not appear (counted as incomplete in denominator)
   unfinished: number;  // total - done
   pct: number;         // done %
   pctProg: number;     // in-progress %
@@ -52,7 +52,7 @@ export function buildSiteRows(
   startedStudentIds?: Set<string>,
   /** required finished evals for a student (sum of per-case panel sizes). Falls back to caseCount × PANEL. */
   targetFor?: (studentId: string) => number,
-  /** student "did not appear" — excluded from completion denominator. */
+  /** student "did not appear" — counted as incomplete (still in denominator). */
   absentFor?: (studentId: string) => boolean
 ): { sections: SiteSection[]; needAttention: number } {
   const defaultNeed = Math.max(caseCount, 1) * PANEL; // fallback when no targetFor given
@@ -79,7 +79,7 @@ export function buildSiteRows(
         .map(([slot, list]) => {
           let done = 0, progress = 0, notStarted = 0, absent = 0;
           list.forEach((s) => {
-            if (absentFor && absentFor(s.id)) { absent++; return; } // excluded from denominator
+            if (absentFor && absentFor(s.id)) { absent++; return; } // no-show = incomplete (counts in denominator)
             const fin = finishedByStudent.get(s.id) || 0;
             const tgt = need(s.id);
             // A student can only be "done" when there is a real target (cases
@@ -89,7 +89,7 @@ export function buildSiteRows(
             else if (fin > 0 || started.has(s.id)) progress++;
             else notStarted++;
           });
-          const total = Math.max(list.length - absent, 0); // denominator excludes absentees
+          const total = list.length; // denominator = ALL students (no-shows included as incomplete)
           const unfinished = Math.max(total - done, 0);
           const pct = total ? Math.round((done / total) * 100) : 0;
           const pctProg = total ? Math.round((progress / total) * 100) : 0;
