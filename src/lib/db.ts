@@ -102,10 +102,30 @@ export async function deleteQuestion(id: string) {
 
 /* ---------------- Students ---------------- */
 export async function listStudents(groupId?: string): Promise<Student[]> {
-  let q = sb().from("students").select("*").order("created_at");
-  if (groupId) q = q.eq("group_id", groupId);
-  const { data } = await q;
-  return (data as Student[]) || [];
+  // Supabase caps a single request at 1000 rows — paginate to fetch all.
+  const out: Student[] = [];
+  const PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    let q = sb().from("students").select("*").order("created_at").range(from, from + PAGE - 1);
+    if (groupId) q = q.eq("group_id", groupId);
+    const { data } = await q;
+    const batch = (data as Student[]) || [];
+    out.push(...batch);
+    if (batch.length < PAGE) break;
+  }
+  return out;
+}
+export async function listStudentsByIds(ids: string[]): Promise<Student[]> {
+  const uniq = Array.from(new Set(ids.filter(Boolean)));
+  if (!uniq.length) return [];
+  const out: Student[] = [];
+  // chunk to stay under URL / IN() limits
+  for (let i = 0; i < uniq.length; i += 200) {
+    const chunk = uniq.slice(i, i + 200);
+    const { data } = await sb().from("students").select("*").in("id", chunk);
+    if (data) out.push(...(data as Student[]));
+  }
+  return out;
 }
 export async function createStudent(p: Partial<Student>) {
   const { data, error } = await sb().from("students").insert(p).select().single();

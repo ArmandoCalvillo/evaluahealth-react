@@ -5,7 +5,7 @@ import Icon from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
 import EvalDrawer, { type EvalTarget } from "@/components/EvalDrawer";
 import { useAuth } from "@/lib/auth";
-import { listMyEvaluations, listStudents, listCases, listGroups } from "@/lib/db";
+import { listMyEvaluations, listStudentsByIds, listCases, listGroups } from "@/lib/db";
 import type { Evaluation, Student } from "@/lib/types";
 import { isDateLocked } from "@/lib/dates";
 
@@ -32,9 +32,9 @@ export default function Submitted() {
     if (!profile?.id) return;
     try {
       const evs = (await listMyEvaluations(profile.id)).filter((e) => e.status === "finished");
-      const allStudents = await listStudents();
+      const students = await listStudentsByIds(evs.map((e) => e.student_id));
       const smap: Record<string, Student> = {};
-      allStudents.forEach((s) => { smap[s.id] = s; });
+      students.forEach((s) => { smap[s.id] = s; });
       const allCases = await listCases();
       const cmap: Record<string, string> = {};
       allCases.forEach((c) => { cmap[c.id] = c.name; });
