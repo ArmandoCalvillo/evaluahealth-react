@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import sharp from "sharp";
 
 export const runtime = "nodejs";
 
@@ -7,6 +8,13 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 const ALLOWED = new Set(["student-photos", "student-idcards", "evaluator-photos"]);
+
+// Longest-edge cap per bucket. Avatars small, ID cards kept readable.
+const MAX_DIM: Record<string, number> = {
+  "student-photos": 512,
+  "evaluator-photos": 512,
+  "student-idcards": 1000,
+};
 
 /**
  * Server-side image re-hosting.
@@ -37,9 +45,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ url, rehosted: false });
     }
 
-    const ct = res.headers.get("content-type") || "image/jpeg";
-    const buf = Buffer.from(await res.arrayBuffer());
-    const ext = ct.split("/")[1]?.split("+")[0] || (url.split(".").pop()?.split("?")[0] || "jpg");
+    const original = Buffer.from(await res.arrayBuffer());
+
+    // Downscale + compress to JPEG. If sharp fails (non-image / decode error),
+    // fall back to the original bytes so import never breaks.
+    let outBuf: Buffer = original;
+    let ct = res.headers.get("content-type") || "image/jpeg";
+    let ext = ct.split("/")[1]?.split("+")[0] || (url.split(".").pop()?.split("?")[0] || "jpg");
+    try {
+      const maxDim = MAX_DIM[bucket] || 512;
+      const optimized = await sharp(original)
+        .rotate() // respect EXIF orientation
+        .resize(maxDim, maxDim, { fit: "inside", withoutEnlargement: true })
+        .jpeg({ quality: 82, mozjpeg: true })
+        .toBuffer();
+      if (optimized.length < original.length) {
+        outBuf = optimized as Buffer;
+        ct = "image/jpeg";
+        ext = "jpg";
+      }
+    } catch {
+      // keep original bytes
+    }
+
     const path = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY, {
@@ -48,7 +76,7 @@ export async function POST(req: NextRequest) {
 
     const { error } = await admin.storage
       .from(bucket)
-      .upload(path, buf, { upsert: true, contentType: ct });
+      .upload(path, outBuf, { upsert: true, contentType: ct });
 
     if (error) {
       return NextResponse.json({ url, rehosted: false });
