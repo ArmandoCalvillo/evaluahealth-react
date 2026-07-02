@@ -53,11 +53,6 @@ export default function Login() {
             </button>
             <a href="#" className="forgot-link" onClick={(e) => e.preventDefault()}>Forgot password?</a>
           </form>
-          <div style={{ marginTop: 22, padding: "12px 14px", borderRadius: 10, background: "#f4f7fc", border: "1px solid #e3eaf4", fontSize: 12.5, color: "var(--muted)", lineHeight: 1.7 }}>
-            <b style={{ color: "var(--ink)" }}>Demo accounts</b><br />
-            Admin — <code>admin@evaluahealth.mx</code> / <code>Admin@123</code><br />
-            Evaluator — <code>evaluator@evaluahealth.mx</code> / <code>Eval@123</code>
-          </div>
         </div>
       </div>
     </div>
