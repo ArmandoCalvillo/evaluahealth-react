@@ -20,11 +20,9 @@ const ADMIN_NAV = [
 ];
 
 const EVAL_NAV = [
-  { section: "Overview" },
-  { href: "/evaluator/dashboard", icon: "layout-dashboard", label: "Dashboard" },
   { section: "Workspace" },
   { href: "/evaluator/evaluate", icon: "clipboard-list", label: "Evaluate" },
-  { href: "/evaluator/submitted", icon: "check-square", label: "Submitted" },
+  { href: "/evaluator/submitted", icon: "history", label: "Activity" },
 ];
 
 export default function Sidebar({ portal, open, onClose }: { portal: "admin" | "evaluator"; open: boolean; onClose: () => void }) {

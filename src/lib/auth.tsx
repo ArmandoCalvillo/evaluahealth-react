@@ -140,7 +140,7 @@ export function useGuard(required: Role) {
     if (loading) return;
     if (!profile) { router.replace("/"); return; }
     if (profile.role !== required) {
-      router.replace(profile.role === "admin" ? "/admin/dashboard" : "/evaluator/dashboard");
+      router.replace(profile.role === "admin" ? "/admin/dashboard" : "/evaluator/evaluate");
     }
   }, [profile, loading, required, router]);
   return { profile, loading };

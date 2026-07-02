@@ -21,7 +21,7 @@ export default function Login() {
     const res = await signIn(email.trim(), pwd);
     setBusy(false);
     if (res.error) { setErr(res.error); return; }
-    router.replace(res.role === "admin" ? "/admin/dashboard" : "/evaluator/dashboard");
+    router.replace(res.role === "admin" ? "/admin/dashboard" : "/evaluator/evaluate");
   }
 
   return (
