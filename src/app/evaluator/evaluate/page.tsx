@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Shell from "@/components/Shell";
 import Icon from "@/components/Icon";
 import EmptyState from "@/components/EmptyState";
@@ -31,7 +31,6 @@ export default function Evaluate() {
   const [cases, setCases] = useState<CaseRow[]>([]);
   const [evals, setEvals] = useState<Evaluation[]>([]);
   const [search, setSearch] = useState("");
-  const [slotFilter, setSlotFilter] = useState("");
 
   // selected student (detail view)
   const [active, setActive] = useState<Student | null>(null);
@@ -108,7 +107,6 @@ export default function Evaluate() {
     return { state, dots: slotStates };
   }
 
-  const slots = useMemo(() => Array.from(new Set(students.map((s) => s.slot).filter(Boolean))) as string[], [students]);
 
   // overall rank for THIS evaluator: 0 = not started, 1 = in progress, 2 = finished (all cases done by me)
   function studentRank(studentId: string) {
@@ -123,8 +121,7 @@ export default function Evaluate() {
 
   const filtered = students
     .filter((s) =>
-      (!search || s.name.toLowerCase().includes(search.toLowerCase()) || s.qrtexto.toLowerCase().includes(search.toLowerCase())) &&
-      (!slotFilter || s.slot === slotFilter)
+      !search || s.name.toLowerCase().includes(search.toLowerCase()) || s.qrtexto.toLowerCase().includes(search.toLowerCase())
     )
     .sort((a, b) => {
       const ra = studentRank(a.id), rb = studentRank(b.id);
@@ -352,74 +349,84 @@ export default function Evaluate() {
   }
 
   // ---- student list (screen 1/2) ----
+  const noExam = !todayGroup || students.length === 0;
   return (
-    <Shell portal="evaluator" title="Evaluate" sub="Select a student to begin a case assessment">
+    <Shell portal="evaluator" title="Evaluate" sub="Search a student to begin a case assessment">
       {loading ? (
         <div className="card"><div className="card-pad"><div className="empty-sm">Cargando…</div></div></div>
-      ) : !todayGroup ? (
-        <div className="card"><div className="card-pad">
-          <EmptyState icon="calendar-clock" title="Not yet scheduled"
-            text={`No assessment is scheduled for today (${fmtDate(todayStr())}). Once an assessment is set up for your site, the students will appear here ready to evaluate.`} />
-        </div></div>
-      ) : students.length === 0 ? (
-        <div className="card"><div className="card-pad">
-          <EmptyState icon="users" title="No students at your site today"
-            text={`An assessment is scheduled for today (${fmtDate(todayStr())}), but no students are registered for your site${site ? ` (${site})` : ""}.`} />
-        </div></div>
       ) : (
         <>
           <div className="card" style={{ marginBottom: 16 }}>
             <div className="card-pad" style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
               <div className="input-search" style={{ flex: 1, minWidth: 220 }}>
                 <Icon name="search" size={16} />
-                <input className="input" placeholder="Search by name or ID…" value={search} onChange={(e) => setSearch(e.target.value)} />
+                <input className="input" placeholder="Search student by name or ID…" value={search} onChange={(e) => setSearch(e.target.value)} autoFocus />
               </div>
-              <select className="select" style={{ maxWidth: 180 }} value={slotFilter} onChange={(e) => setSlotFilter(e.target.value)}>
-                <option value="">All Slots</option>
-                {slots.map((s) => <option key={s}>{s}</option>)}
-              </select>
+              {search.trim() && <button className="btn btn-ghost" onClick={() => setSearch("")}><Icon name="x" size={15} /> Clear</button>}
             </div>
           </div>
 
-          <div className="case-legend" style={{ marginBottom: 12 }}>
-            <span className="lg"><Icon name="check-circle-2" size={15} style={{ color: "#16a34a" }} /> Finished</span>
-            <span className="lg"><Icon name="clock" size={15} style={{ color: "#f59e0b" }} /> In progress</span>
-            <span className="lg"><Icon name="circle" size={15} style={{ color: "#cbd5e1" }} /> Not started</span>
-          </div>
-
-          <div className="grid g-3">{filtered.map((s) => (
-            <div className="case-tile student-tile" key={s.id}>
-              <div className="st-head">
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          {!search.trim() ? (
+            <div className="card"><div className="ev-hero">
+              <span className="ev-hero-ic"><Icon name="search" size={28} /></span>
+              <h3>Search a student to begin</h3>
+              <p>Type a student&rsquo;s name or ID above to find them and start a case evaluation.</p>
+            </div></div>
+          ) : noExam ? (
+            <div className="card"><div className="ev-hero">
+              <span className="ev-hero-ic"><Icon name="calendar-clock" size={28} /></span>
+              <h3>No exams scheduled</h3>
+              <p>{`There is no assessment scheduled for today (${fmtDate(todayStr())})${site ? ` at your site (${site})` : ""}. Once an assessment is set up, students will appear here ready to evaluate.`}</p>
+            </div></div>
+          ) : filtered.length === 0 ? (
+            <div className="card"><div className="ev-hero">
+              <span className="ev-hero-ic"><Icon name="user-x" size={28} /></span>
+              <h3>No student found</h3>
+              <p>No student matches &ldquo;{search}&rdquo; at your site today. Check the name or ID and try again.</p>
+            </div></div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>{filtered.map((s) => (
+              <div className="card" key={s.id}>
+                <div className="ev-result">
                   {s.photo_url
-                    ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={s.photo_url} className="av-md" alt="" style={{ borderRadius: "50%" }} />
-                    : <span className="av-md" style={{ borderRadius: "50%", background: "var(--brand-soft)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--brand)", fontWeight: 800 }}>{s.name[0]}</span>}
-                  <div><div className="nm">{s.name}</div><div className="sub" style={{ fontSize: 12 }}>{s.qrtexto}</div></div>
+                    ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={s.photo_url} className="ev-photo" alt="" />
+                    : <span className="ev-photo-ph">{s.name[0]}</span>}
+                  <div className="ev-body">
+                    <div className="ev-name">{s.name}</div>
+                    <span className="ev-idbadge"><Icon name="id-card" size={14} /> {s.qrtexto}</span>
+                    <div className="ev-chips">
+                      <span className="slot-chip"><Icon name="map-pin" size={13} /> {s.site}</span>
+                      <span className="slot-chip"><Icon name="clock" size={13} /> {s.slot}</span>
+                    </div>
+                    <div className="ev-cases">
+                      {(cases.length ? cases : [0, 1, 2]).map((c, i) => {
+                        const caseId = cases[i]?.id;
+                        const st = caseId ? caseStatus(s.id, caseId) : { state: "no" as const, dots: ["no", "no", "no"] as ("ok" | "prog" | "no")[] };
+                        const icon = st.state === "ok" ? "check-circle-2" : st.state === "prog" ? "clock" : "circle";
+                        const color = st.state === "ok" ? "#16a34a" : st.state === "prog" ? "#f59e0b" : "#cbd5e1";
+                        return (
+                          <span className="ev-case" key={i}>
+                            <Icon name={icon} size={16} style={{ color }} /> Case {i + 1}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+                {s.idcard_url && (
+                  <div className="ev-idcard">
+                    <div className="ev-idcard-lbl"><Icon name="credit-card" size={14} /> ID Card</div>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={s.idcard_url} alt="ID card" />
+                  </div>
+                )}
+                <div className="ev-footer">
+                  <button className="btn btn-pri" onClick={() => openStudent(s)}>
+                    <Icon name="clipboard-list" size={16} /> Evaluate
+                  </button>
                 </div>
               </div>
-              <div className="st-meta"><span className="slot-chip"><Icon name="map-pin" size={13} /> {s.site}</span><span className="slot-chip"><Icon name="clock" size={13} /> {s.slot}</span></div>
-              <div className="st-cases">
-                {(cases.length ? cases : [0, 1, 2]).map((c, i) => {
-                  const caseId = cases[i]?.id;
-                  const st = caseId ? caseStatus(s.id, caseId) : { state: "no" as const, dots: ["no", "no", "no"] as ("ok" | "prog" | "no")[] };
-                  const icon = st.state === "ok" ? "check-circle-2" : st.state === "prog" ? "clock" : "circle";
-                  const color = st.state === "ok" ? "#16a34a" : st.state === "prog" ? "#f59e0b" : "#cbd5e1";
-                  return (
-                    <div className={`scase ${st.state}`} key={i}>
-                      <div className="scase-lbl">{cases[i]?.name ? `Case ${i + 1}` : `Case ${i + 1}`}</div>
-                      <Icon name={icon} size={19} style={{ color }} />
-                      <span className="edots">{st.dots.map((d, di) => <span key={di} className={`edot ed-${d}`} />)}</span>
-                    </div>
-                  );
-                })}
-              </div>
-              <button className="btn btn-pri full" style={{ marginTop: 12, width: "100%", justifyContent: "center" }} onClick={() => openStudent(s)}>
-                <Icon name="clipboard-list" size={15} /> Evaluate
-              </button>
-            </div>
-          ))}</div>
-          {filtered.length === 0 && (
-            <div className="card"><div className="card-pad"><div className="empty-sm">No students match your search.</div></div></div>
+            ))}</div>
           )}
         </>
       )}

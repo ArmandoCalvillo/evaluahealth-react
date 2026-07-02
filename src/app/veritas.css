@@ -736,6 +736,34 @@ td.nowrap,.pill.nowrap{white-space:nowrap}
 .st-idcard-empty{display:flex;align-items:center;justify-content:center;gap:8px;padding:24px;border:1px dashed #cbd5e1;border-radius:10px;color:#94a3b8;font-size:13px;font-weight:600;background:#f8fafc}
 .btn.btn-active{background:#eef2ff;border-color:#c7d2fe;color:#1e3a8a}
 
+/* ===== Evaluate search result card (full-width) ===== */
+.ev-hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:56px 24px;color:#94a3b8}
+.ev-hero .ev-hero-ic{width:56px;height:56px;border-radius:16px;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.ev-hero .ev-hero-ic svg{width:28px;height:28px}
+.ev-hero h3{font-size:16px;font-weight:800;color:#334155;margin:0 0 6px}
+.ev-hero p{font-size:13.5px;color:#94a3b8;max-width:380px;margin:0}
+.ev-result{display:flex;align-items:stretch;gap:22px;padding:22px 24px}
+.ev-result .ev-photo{width:118px;height:118px;border-radius:18px;object-fit:cover;flex-shrink:0;border:1px solid var(--line)}
+.ev-result .ev-photo-ph{width:118px;height:118px;border-radius:18px;flex-shrink:0;background:var(--brand-soft);display:flex;align-items:center;justify-content:center;color:var(--brand);font-weight:800;font-size:40px}
+.ev-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
+.ev-name{font-size:22px;font-weight:800;color:#0f172a;line-height:1.2}
+.ev-idbadge{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;padding:5px 12px;border-radius:999px;background:#eef4ff;border:1px solid #dbe6fb;font-size:13px;font-weight:800;color:var(--brand);font-family:var(--mono,monospace)}
+.ev-idbadge svg{width:14px;height:14px}
+.ev-chips{display:flex;flex-wrap:wrap;gap:8px}
+.ev-cases{display:flex;flex-wrap:wrap;gap:10px;margin-top:2px}
+.ev-case{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:10px;background:#f7f9fc;border:1px solid var(--line);font-size:12.5px;font-weight:700;color:#475569}
+.ev-case svg{width:16px;height:16px}
+.ev-idcard{border-top:1px dashed #e2e8f0;margin-top:2px;padding:16px 24px 4px}
+.ev-idcard-lbl{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#64748b;margin-bottom:10px}
+.ev-idcard-lbl svg{width:14px;height:14px}
+.ev-idcard img{width:100%;max-width:440px;border-radius:12px;border:1px solid #e2e8f0;display:block;background:#f8fafc}
+.ev-footer{border-top:1px solid var(--line);margin-top:20px;padding:16px 24px}
+.ev-footer .btn{width:100%;justify-content:center;padding:14px 26px;font-size:14.5px}
+@media(max-width:760px){
+  .ev-result{flex-direction:column;align-items:stretch;gap:16px}
+  .ev-result .ev-photo,.ev-result .ev-photo-ph{width:96px;height:96px}
+}
+
 /* ===== Student detail drawer ===== */
 .student-tile.is-clickable{cursor:pointer;transition:box-shadow .15s,transform .15s}
 .student-tile.is-clickable:hover{box-shadow:0 8px 24px rgba(37,99,235,.12);transform:translateY(-2px)}
