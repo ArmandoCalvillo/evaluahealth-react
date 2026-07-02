@@ -31,15 +31,15 @@ export default function Login() {
       <div className="auth-form">
         <div className="auth-card">
           <Image src="/assets/img/logo-horizontal.png" alt="EvaluaHealth Experts" width={300} height={40} className="wordmark" style={{ height: 40, width: "auto" }} priority />
-          <h1>Welcome back</h1>
-          <p className="lead">Sign in to your evaluation workspace.</p>
+          <h1>Bienvenido</h1>
+          <p className="lead">Inicia sesión en tu espacio de evaluación.</p>
           <form onSubmit={submit}>
             <div className="field">
-              <label>Email address</label>
-              <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <label>Correo electrónico / Número telefónico</label>
+              <input className="input" type="text" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div className="field">
-              <label>Password</label>
+              <label>Contraseña</label>
               <div className="pass-wrap">
                 <input className="input" type={show ? "text" : "password"} value={pwd} onChange={(e) => setPwd(e.target.value)} required />
                 <button type="button" onClick={() => setShow((s) => !s)}>
@@ -49,9 +49,9 @@ export default function Login() {
             </div>
             {err && <div style={{ color: "#e11d48", fontSize: 13, fontWeight: 600, marginBottom: 12 }}>{err}</div>}
             <button className="btn btn-pri btn-block" type="submit" disabled={busy} style={{ marginTop: 8 }}>
-              {busy ? "Signing in…" : <>Sign In <Icon name="arrow-right" size={16} /></>}
+              {busy ? "Iniciando sesión…" : <>Iniciar sesión <Icon name="arrow-right" size={16} /></>}
             </button>
-            <a href="#" className="forgot-link" onClick={(e) => e.preventDefault()}>Forgot password?</a>
+            <a href="#" className="forgot-link" onClick={(e) => e.preventDefault()}>¿Olvidaste tu contraseña?</a>
           </form>
         </div>
       </div>
